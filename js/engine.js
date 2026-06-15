@@ -19,12 +19,12 @@
 
   add({ type: "cover", section: "Welcome" });
   add({ type: "objectives", section: "Welcome" });
-  add({ type: "divider", section: "History", num: "01", title: "Vauxhall History", quote: "From a smithy to Britain's favourite brand — quite a journey." });
+  add({ type: "divider", section: "History", num: "01", title: "Vauxhall History", quote: "From a smithy to Britain's favourite brand. Quite a journey." });
   add({ type: "origin", section: "History" });
   add({ type: "timeline", section: "History" });
-  add({ type: "divider", section: "Cars", num: "02", title: "The 2026 Range: Cars", quote: "Let's meet the cars — everything you need to know about each model, in plain English." });
+  add({ type: "divider", section: "Cars", num: "02", title: "The 2026 Range: Cars", quote: "Let's meet the cars. Everything you need to know about each model, in plain English." });
   C.cars.forEach(function (v) { add({ type: "vehicle", section: "Cars", data: v }); });
-  add({ type: "divider", section: "Vans", num: "03", title: "The 2026 Range: Vans", quote: "Our van range is a cornerstone of British business — and it's going electric too." });
+  add({ type: "divider", section: "Vans", num: "03", title: "The 2026 Range: Vans", quote: "Our van range is a cornerstone of British business, and it's going electric too." });
   C.vans.forEach(function (v) { add({ type: "vehicle", section: "Vans", data: v, van: true }); });
   add({ type: "divider", section: "Retired", num: "04", title: "Retired Models", quote: "Understanding what came before helps you explain the full Vauxhall story." });
   C.retired.forEach(function (v) { add({ type: "retired", section: "Retired", data: v }); });
@@ -51,12 +51,23 @@
     );
   }
 
-  function heroHTML(name, id) {
+  function heroHTML(name, id, hotspots) {
+    var spots = "";
+    if (hotspots && hotspots.length) {
+      spots = '<div class="hs-layer">' +
+        hotspots.map(function (h, i) {
+          return '<button class="hs-dot" style="left:' + h.x + '%;top:' + h.y + '%" data-hs="' + i + '">' +
+            '<span class="hs-ring"></span>' +
+            '<div class="hs-tip"><strong>' + esc(h.label) + '</strong><p>' + esc(h.detail) + '</p></div>' +
+            '</button>';
+        }).join("") + '</div>';
+    }
     return (
       '<div class="hero">' +
       '<img src="images/' + id + '.jpg" alt="' + esc(name) + '" ' +
       "onerror=\"this.style.display='none';this.nextElementSibling.style.display='flex';\">" +
       '<div class="vx-img" style="display:none"><span class="lbl">[ image ]<br>' + esc(name) + " — drop photo at<br>images/" + id + ".jpg</span></div>" +
+      spots +
       "</div>"
     );
   }
@@ -105,33 +116,55 @@
         return '<section class="slide active">' + inner + chrome(s, idx) + "</section>";
 
       case "timeline":
-        inner = '<div class="eyebrow">The Timeline</div><h2 class="title">The story so far</h2>' +
-          '<div class="scroll" style="margin-top:16px"><div class="tl">' +
-          C.timeline.map(function (t) {
-            return '<div class="tl-item">' +
-              '<div class="tl-year">' + esc(t.year) + (t.title ? ' <small>' + esc(t.title) + "</small>" : "") + "</div>" +
-              '<div class="tl-text">' + esc(t.text) + "</div>" +
-              (t.fact ? '<div class="tl-fact">Fun fact: ' + esc(t.fact) + "</div>" : "") + "</div>";
-          }).join("") + "</div></div>";
-        return '<section class="slide active">' + inner + chrome(s, idx) + "</section>";
+        inner = '<div class="tl-header"><div class="eyebrow">The Timeline</div><h2 class="title">The story so far</h2></div>' +
+          '<div class="tl-h-outer">' +
+          '<button class="tl-arrow" id="tl-prev" disabled>&#8592;</button>' +
+          '<div class="tl-h-scroll" id="tl-scroll">' +
+          '<div class="tl-h-inner">' +
+          '<div class="tl-h-rail"></div>' +
+          C.timeline.map(function (t, i) {
+            var above = (i % 2 === 0);
+            var card = '<div class="tl-h-card">' +
+              '<div class="tl-h-year">' + esc(t.year) + (t.title ? ' <span>' + esc(t.title) + '</span>' : '') + '</div>' +
+              '<div class="tl-h-text">' + esc(t.text) + '</div>' +
+              (t.fact ? '<div class="tl-h-fact">' + esc(t.fact) + '</div>' : '') +
+              '</div>';
+            return '<div class="tl-h-item ' + (above ? 'tl-up' : 'tl-dn') + '">' +
+              (above ? card + '<div class="tl-h-stem"></div>' : '') +
+              '<div class="tl-h-dot"></div>' +
+              (!above ? '<div class="tl-h-stem"></div>' + card : '') +
+              '</div>';
+          }).join('') +
+          '</div></div>' +
+          '<button class="tl-arrow" id="tl-next">&#8594;</button>' +
+          '</div>';
+        return '<section class="slide tl-slide active">' + inner + chrome(s, idx) + '</section>';
 
       case "vehicle":
         inner = '<div class="veh-head"><div>' +
           '<div class="eyebrow">' + (s.van ? "Van" : "Car") + " · " + esc(d.tagline) + "</div>" +
           '<h2 class="title">' + esc(d.name) + "</h2></div></div>" +
-          heroHTML(d.name, d.image) +
+          heroHTML(d.name, d.image, d.hotspots) +
           (d.pitch ? '<div class="pitch">' + esc(d.pitch) + "</div>" : "") +
           statsHTML(d.stats) +
           '<div class="cols"><div class="block"><h4>Key Facts</h4><ul class="facts">' +
           d.keyFacts.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>" +
           (d.funFact ? '<div class="funbox"><b>Fun fact:</b> ' + esc(d.funFact) + "</div>" : "") +
           "</div><div class=\"block\">" +
-          (d.headToHead ? "<h4>Head-to-Head Edge</h4><ul class=\"facts edge\">" +
-            d.headToHead.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>" : "") +
+          (d.headToHead && d.headToHead.length ?
+            '<h4>Head to Head</h4><div class="h2h">' +
+            '<div class="h2h-head"><span>Vauxhall</span><span class="h2h-vs">vs</span><span>Rival</span></div>' +
+            d.headToHead.map(function (h) {
+              return '<div class="h2h-row">' +
+                '<div class="h2h-label">' + esc(h.label) + '</div>' +
+                '<div class="h2h-vx">' + esc(h.vauxhall) + '</div>' +
+                '<div class="h2h-rv">' + esc(h.rival) + '</div>' +
+                '</div>';
+            }).join('') + '</div>' : '') +
           "<h4 style=\"margin-top:14px\">What the press say</h4>" +
           '<div class="press' + (d.press.length === 1 ? " one" : "") + '">' +
           d.press.map(function (p) {
-            return '<div class="quote"><div class="q">"' + esc(p.quote) + '"</div><div class="s">— ' + esc(p.src) + "</div></div>";
+            return '<div class="quote"><div class="q">"' + esc(p.quote) + '"</div><div class="s">' + esc(p.src) + "</div></div>";
           }).join("") + "</div></div></div>";
         return '<section class="slide active"><div class="scroll">' + inner + "</div>" + chrome(s, idx) + "</section>";
 
@@ -240,6 +273,8 @@
 
     if (s.type === "quiz") wireQuiz(sectionEl, s);
     if (s.type === "results") renderResults(sectionEl, idx);
+    if (s.type === "timeline") wireTimeline(sectionEl);
+    if (s.type === "vehicle") wireHotspots(sectionEl);
 
     // nav button state
     elPrev.disabled = idx === 0;
@@ -293,6 +328,74 @@
     window.VXSCORM.commit();
     var pill = sectionEl.querySelector("#completion-status");
     if (pill) { pill.className = "status-pill done"; pill.textContent = "Status: Completed ✓"; }
+  }
+
+  /* ---- timeline wiring ---- */
+  function wireTimeline(el) {
+    var scroll = el.querySelector("#tl-scroll");
+    var prev = el.querySelector("#tl-prev");
+    var next = el.querySelector("#tl-next");
+    if (!scroll) return;
+    var step = 380;
+
+    function updateArrows() {
+      prev.disabled = scroll.scrollLeft <= 0;
+      next.disabled = scroll.scrollLeft >= scroll.scrollWidth - scroll.clientWidth - 2;
+    }
+    prev.addEventListener("click", function () { scroll.scrollBy({ left: -step, behavior: "smooth" }); });
+    next.addEventListener("click", function () { scroll.scrollBy({ left: step, behavior: "smooth" }); });
+    scroll.addEventListener("scroll", updateArrows);
+
+    // horizontal scroll via mouse wheel
+    scroll.addEventListener("wheel", function (e) {
+      if (Math.abs(e.deltaX) > 0) return;
+      e.preventDefault();
+      scroll.scrollLeft += e.deltaY * 1.5;
+    }, { passive: false });
+
+    // drag to scroll
+    var dragging = false, startX, startLeft;
+    scroll.addEventListener("mousedown", function (e) {
+      dragging = true; startX = e.clientX; startLeft = scroll.scrollLeft;
+      scroll.classList.add("dragging"); e.preventDefault();
+    });
+    window.addEventListener("mousemove", function (e) {
+      if (!dragging) return;
+      scroll.scrollLeft = startLeft - (e.clientX - startX);
+    });
+    window.addEventListener("mouseup", function () {
+      dragging = false; scroll.classList.remove("dragging");
+    });
+
+    // animate items in on scroll
+    var items = el.querySelectorAll(".tl-h-item");
+    if (window.IntersectionObserver) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add("tl-visible"); io.unobserve(e.target); }
+        });
+      }, { root: scroll, threshold: 0.2 });
+      items.forEach(function (item) { io.observe(item); });
+    } else {
+      items.forEach(function (item) { item.classList.add("tl-visible"); });
+    }
+    updateArrows();
+  }
+
+  /* ---- hotspot wiring ---- */
+  function wireHotspots(el) {
+    var dots = el.querySelectorAll(".hs-dot");
+    dots.forEach(function (dot) {
+      dot.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var isOpen = dot.classList.contains("open");
+        dots.forEach(function (d) { d.classList.remove("open"); });
+        if (!isOpen) dot.classList.add("open");
+      });
+    });
+    el.addEventListener("click", function () {
+      dots.forEach(function (d) { d.classList.remove("open"); });
+    });
   }
 
   /* ---- responsive scaling ---- */

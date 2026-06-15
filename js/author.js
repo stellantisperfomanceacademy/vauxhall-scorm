@@ -42,6 +42,7 @@
   var draggedSinceDown = false;
   var saveStatusTimer = null;
   var formSyncing = false;
+  var cropModeActive = false; // true = drag on selected image repositions (no Ctrl needed)
 
   function esc(s) {
     return String(s == null ? "" : s)
@@ -401,7 +402,7 @@
         img.onerror = function () { node.innerHTML = '<div class="ph">Missing image</div>'; };
         img.addEventListener("mousedown", function (e) {
           if (state.liveMode || !el.src || el.fit === "fill") return;
-          if (!(e.ctrlKey || e.metaKey)) return;
+          if (!(e.ctrlKey || e.metaKey || cropModeActive)) return;
           e.stopPropagation();
           startCropDrag(e, el, node);
         });
@@ -895,7 +896,9 @@
     if (!sc) return;
     var elList = document.getElementById("element-list");
     var sorted = sc.elements.slice().sort(function (a, b) { return (b.z || 0) - (a.z || 0); });
-    elList.innerHTML = sorted.map(function (el) {
+
+    // custom overlay elements
+    var customHTML = sorted.map(function (el) {
       return '<li data-el="' + el.id + '" class="' + (state.selectedElementId === el.id ? "active" : "") + '">' +
         '<span class="li-z" title="Layer">' + (el.z || 1) + '</span>' +
         '<span class="li-type li-' + el.type + '">' + el.type + '</span>' +
@@ -904,7 +907,22 @@
         '<button type="button" class="li-btn" data-el="' + el.id + '" data-z="1" title="Bring forward">↑</button>' +
         '<button type="button" class="li-btn" data-el="' + el.id + '" data-z="-1" title="Send back">↓</button>' +
         '</span></li>';
-    }).join("") || '<li class="hint">Nothing on canvas yet</li>';
+    }).join("");
+
+    // native slide elements (title, hero, stats, etc.)
+    var nativeNodes = slideRoot.querySelectorAll("[data-slot]");
+    var nativeHTML = "";
+    nativeNodes.forEach(function (n) {
+      var slot = n.getAttribute("data-slot");
+      var label = slot.charAt(0).toUpperCase() + slot.slice(1);
+      var isActive = (selectedNativeSlot === slot) ? " active" : "";
+      nativeHTML += '<li data-native="' + slot + '" class="li-native' + isActive + '" title="Native slide element">' +
+        '<span class="li-type li-native-badge">native</span>' +
+        '<span class="li-name">' + esc(label) + '</span></li>';
+    });
+
+    elList.innerHTML = customHTML + nativeHTML || '<li class="hint">Nothing on canvas yet</li>';
+
     elList.querySelectorAll("li[data-el]").forEach(function (li) {
       li.onclick = function (e) {
         if (e.target.closest(".li-btn")) return;
@@ -917,6 +935,20 @@
         nudgeElementZ(btn.getAttribute("data-el"), parseInt(btn.getAttribute("data-z"), 10));
       };
     });
+    elList.querySelectorAll("li[data-native]").forEach(function (li) {
+      li.onclick = function () {
+        var slot = li.getAttribute("data-native");
+        var n = slideRoot.querySelector('[data-slot="' + slot + '"]');
+        if (!n) return;
+        var isImg = n.classList.contains("native-img");
+        var isText = n.classList.contains("ce");
+        selectNative(slot, isImg, isText, n);
+      };
+    });
+
+    // scroll active item into view
+    var activeItem = elList.querySelector("li.active");
+    if (activeItem) activeItem.scrollIntoView({ block: "nearest" });
 
     var popList = document.getElementById("popup-list");
     popList.innerHTML = sc.popups.map(function (p) {
@@ -997,6 +1029,13 @@
     state.selectedElementId = id;
     state.selectedPopupId = null;
     clearNativeSelection();
+    // exit crop mode when switching elements
+    if (cropModeActive) {
+      cropModeActive = false;
+      canvas.classList.remove("crop-mode");
+      var btn = document.getElementById("btn-crop-mode");
+      if (btn) btn.classList.remove("active");
+    }
     var el = elById(id);
     if (!el) { showProps(null); return; }
     showProps("element");
@@ -1090,6 +1129,9 @@
     var el = elById(state.selectedElementId);
     if (!el) return;
     readFormIntoElement(el);
+    // keep crop controls visibility in sync with fit selection
+    var cropWrap = document.getElementById("wrap-el-crop");
+    if (cropWrap) cropWrap.hidden = el.type !== "image" || el.fit === "fill";
     persist(true);
     patchCanvasElement(el);
     refreshLists();
@@ -1597,6 +1639,13 @@
     document.getElementById("btn-del-el").onclick = deleteSelected;
     document.getElementById("btn-del-pop").onclick = deleteSelected;
     document.getElementById("btn-export").onclick = exportJSON;
+
+    document.getElementById("btn-crop-mode").onclick = function () {
+      cropModeActive = !cropModeActive;
+      canvas.classList.toggle("crop-mode", cropModeActive);
+      this.classList.toggle("active", cropModeActive);
+      this.textContent = cropModeActive ? "✓ Repositioning on" : "Drag to reposition";
+    };
 
     document.getElementById("file-import").onchange = function (e) {
       var f = e.target.files[0];

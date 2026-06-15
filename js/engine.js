@@ -133,7 +133,8 @@
           '<div class="tl-det-nav">' +
           '<button class="tl-det-btn" id="tl-det-prev">&#8592; Prev</button>' +
           '<button class="tl-det-btn" id="tl-det-next">Next &#8594;</button>' +
-          '</div></div></div>';
+          '</div></div></div>' +
+          '<div class="tl-detail-im" id="tl-detail-im"></div>';
         return '<section class="slide tl-new-slide active">' + inner + chrome(s, idx) + '</section>';
 
       case "vehicle":
@@ -370,20 +371,66 @@
 
   /* ---- timeline wiring (grid + fullscreen detail) ---- */
   function wireTimeline(el) {
-    var detail = el.querySelector("#tl-detail");
-    var bg     = el.querySelector("#tl-det-bg");
+    var detail   = el.querySelector("#tl-detail");
+    var imDetail = el.querySelector("#tl-detail-im");
+    var bg       = el.querySelector("#tl-det-bg");
     var eyebrowEl = el.querySelector("#tl-det-eyebrow");
-    var yearEl = el.querySelector("#tl-det-year");
-    var textEl = el.querySelector("#tl-det-text");
-    var factEl = el.querySelector("#tl-det-fact");
-    var closeB = el.querySelector("#tl-det-close");
-    var prevB  = el.querySelector("#tl-det-prev");
-    var nextB  = el.querySelector("#tl-det-next");
+    var yearEl   = el.querySelector("#tl-det-year");
+    var textEl   = el.querySelector("#tl-det-text");
+    var factEl   = el.querySelector("#tl-det-fact");
+    var closeB   = el.querySelector("#tl-det-close");
+    var prevB    = el.querySelector("#tl-det-prev");
+    var nextB    = el.querySelector("#tl-det-next");
     var activeTl = 0;
+
+    function buildImmersive(t, i) {
+      var bullets = (t.bullets || [t.text]).concat(
+        t.fact ? ['<strong>Fun fact:</strong> ' + esc(t.fact)] : []
+      );
+      return (
+        '<div class="tl-im-bg" style="background-image:url(' + esc(t.bg) + ')"></div>' +
+        (t.assets || []).map(function (a) {
+          return '<img class="tl-im-asset ' + esc(a.cls) + ' tl-im-anim-' + esc(a.anim) + '" src="' + esc(a.src) + '" alt="">';
+        }).join('') +
+        '<div class="tl-im-label">' +
+          '<div class="tl-im-label-year">' + esc(t.year) + '</div>' +
+          (t.title ? '<div class="tl-im-label-title">' + esc(t.title) + '</div>' : '') +
+        '</div>' +
+        '<div class="tl-im-panel">' +
+          '<ul class="tl-im-bullets">' +
+          bullets.map(function (b) { return '<li>' + b + '</li>'; }).join('') +
+          '</ul>' +
+        '</div>' +
+        '<button class="tl-det-close tl-im-close-btn">&#10005; Close</button>' +
+        '<div class="tl-im-nav">' +
+          '<button class="tl-det-btn tl-im-prev"' + (i === 0 ? ' disabled' : '') + '>&#8592; Prev</button>' +
+          '<button class="tl-det-btn tl-im-next"' + (i === C.timeline.length - 1 ? ' disabled' : '') + '>Next &#8594;</button>' +
+        '</div>'
+      );
+    }
+
+    function closeImmersive() {
+      imDetail.classList.remove("open");
+      imDetail.innerHTML = "";
+    }
 
     function showEntry(i) {
       var t = C.timeline[i];
       activeTl = i;
+
+      if (t.layout === "immersive") {
+        detail.classList.remove("open");
+        imDetail.innerHTML = buildImmersive(t, i);
+        imDetail.classList.add("open");
+        imDetail.querySelector(".tl-im-close-btn").addEventListener("click", closeImmersive);
+        var imPrev = imDetail.querySelector(".tl-im-prev");
+        var imNext = imDetail.querySelector(".tl-im-next");
+        imPrev.addEventListener("click", function () { if (activeTl > 0) showEntry(activeTl - 1); });
+        imNext.addEventListener("click", function () { if (activeTl < C.timeline.length - 1) showEntry(activeTl + 1); });
+        return;
+      }
+
+      closeImmersive();
       bg.style.backgroundImage = "url(assets/timeline/" + t.year + ".jpg)";
       if (eyebrowEl) {
         eyebrowEl.textContent = t.eyebrow || "";

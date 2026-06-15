@@ -25,7 +25,22 @@ window.COURSE = {
       fact: "The Vauxhall name is over 800 years old. Sir Falkes de Breauté's personal crest — a mythical Griffin — is still the basis for the Vauxhall logo today."
     },
     { year: "1857", text: "Alexander Wilson sets up a marine engine factory in Vauxhall, London. He names it after the area and so the story begins." },
-    { year: "1903", text: "Vauxhall builds its very first car: a 5HP two-seater, steered by a tiller rather than a steering wheel, with no reverse gear whatsoever.", fact: "It cost 130 Guineas (around £136). Adjusted for inflation, that is roughly £17,000 today. Not bad for a car that could not go backwards." },
+    {
+      year: "1903",
+      title: "A719 · Horseless Carriage",
+      text: "Vauxhall builds its very first car: a 5HP two-seater, steered by a tiller rather than a steering wheel, with no reverse gear whatsoever.",
+      fact: "It cost 130 Guineas (around \u00a3136). Adjusted for inflation, that is roughly \u00a317,000 today. Not bad for a car that could not go backwards.",
+      layout: "immersive",
+      bg: "images/timeline2/LondonOLD2.png",
+      bullets: [
+        "Utilising their marine petrol engines, Vauxhall produced its very first \u201chorseless carriage\u201d in 1903.",
+        "It was a 5hp two-seater steered by a tiller \u2014 no steering wheel \u2014 and had absolutely no reverse gear."
+      ],
+      assets: [
+        { src: "images/timeline2/1903.png",      cls: "tl-im-car",   anim: "slide-up"  },
+        { src: "images/timeline2/Guineas_1.png",  cls: "tl-im-coins", anim: "fade-drop" }
+      ]
+    },
     { year: "1904", text: "Director Percy Kidner drives a new 6HP four-seater in the gruelling London-to-Glasgow reliability trial. Despite being the smallest car there, it lost only 7 out of a possible 1,000 points.", fact: "Top speed: 18 mph. Fuel economy: 37 mpg. Remarkable by any standard, let alone 1904." },
     { year: "1905", text: "Vauxhall moves to Luton, Bedfordshire. The heart of the brand still beats there today." },
     { year: "1910", text: 'The legendary "Prince Henry" C-Type launches: a 3-litre, 25HP sports car that put Vauxhall on the map internationally.' },

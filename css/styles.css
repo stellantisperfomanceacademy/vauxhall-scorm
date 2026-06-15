@@ -458,6 +458,120 @@ table.cmp td:nth-child(5) { font-style: italic; opacity: .8; }
 .tl-det-btn:disabled { opacity: .25; cursor: not-allowed; }
 
 /* ============================================================
+   IMMERSIVE TIMELINE DETAIL (e.g. 1903 Horseless Carriage)
+   ============================================================ */
+
+/* Keyframe animations */
+@keyframes tl-im-bg-in    { from { opacity:0 }                     to { opacity:1 } }
+@keyframes tl-im-slide-up { from { opacity:0; transform:translateY(70px) } to { opacity:1; transform:translateY(0) } }
+@keyframes tl-im-fade-drop{ from { opacity:0; transform:translateY(-28px) } to { opacity:1; transform:translateY(0) } }
+@keyframes tl-im-panel-in { from { opacity:0; transform:translateX(40px) } to { opacity:1; transform:translateX(0) } }
+@keyframes tl-im-label-in { from { opacity:0; transform:translateX(-20px) } to { opacity:1; transform:translateX(0) } }
+
+/* Container */
+.tl-detail-im {
+  position: absolute; inset: 0; z-index: 26;
+  pointer-events: none; opacity: 0;
+  transition: opacity .25s ease;
+}
+.tl-detail-im.open { opacity: 1; pointer-events: all; }
+
+/* Photo background */
+.tl-im-bg {
+  position: absolute; inset: 0;
+  background: center/cover no-repeat;
+  animation: tl-im-bg-in .5s ease both;
+}
+.tl-im-bg::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    105deg,
+    rgba(0,0,0,.08) 0%,
+    rgba(0,0,0,.0) 45%,
+    rgba(5,5,30,.72) 100%
+  );
+}
+
+/* Image assets */
+.tl-im-asset {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Vintage car — bottom left, slides up */
+.tl-im-car {
+  left: 18px; bottom: 0;
+  height: 72%;            /* ~389px on 540px stage */
+  width: auto;
+  transform-origin: bottom center;
+  animation: tl-im-slide-up .75s cubic-bezier(.22,.68,0,1.2) .15s both;
+  filter: drop-shadow(0 12px 32px rgba(0,0,0,.6));
+  z-index: 2;
+}
+
+/* Gold guineas — upper left, fades down */
+.tl-im-coins {
+  left: 80px; top: -18px;
+  height: 55%;            /* ~297px on 540px stage */
+  width: auto;
+  animation: tl-im-fade-drop .7s ease .45s both;
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,.5));
+  z-index: 3;
+}
+
+/* Year / title label — bottom left */
+.tl-im-label {
+  position: absolute; left: 26px; bottom: 26px; z-index: 5;
+  border-left: 3px solid #EB001E; padding-left: 10px;
+  animation: tl-im-label-in .55s ease .6s both;
+}
+.tl-im-label-year {
+  font-weight: 900; font-size: 28px; letter-spacing: -.04em;
+  color: #fff; line-height: 1;
+}
+.tl-im-label-title {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .14em;
+  color: rgba(255,255,255,.75); font-weight: 700; margin-top: 4px;
+}
+
+/* Info panel — right side */
+.tl-im-panel {
+  position: absolute; right: 22px; bottom: 48px;
+  width: 38%; max-width: 370px;
+  background: rgba(5,5,30,.82);
+  backdrop-filter: blur(6px);
+  border-left: 3px solid #EB001E;
+  padding: 18px 20px 16px;
+  animation: tl-im-panel-in .65s cubic-bezier(.22,.68,0,1.2) .35s both;
+  z-index: 5;
+}
+.tl-im-bullets {
+  list-style: none; margin: 0; padding: 0;
+}
+.tl-im-bullets li {
+  position: relative; padding-left: 14px;
+  font-size: 12px; line-height: 1.55; color: rgba(255,255,255,.92);
+  margin-bottom: 8px;
+}
+.tl-im-bullets li:last-child { margin-bottom: 0; color: #fef4a8; }
+.tl-im-bullets li::before {
+  content: "•"; position: absolute; left: 0;
+  color: #EB001E; font-weight: 900;
+}
+
+/* Close + nav controls */
+.tl-im-close-btn {
+  position: absolute; top: 16px; right: 18px; z-index: 10;
+}
+.tl-im-nav {
+  position: absolute; bottom: 16px; left: 26px; z-index: 10;
+  display: flex; gap: 10px;
+  animation: tl-im-label-in .55s ease .7s both;
+}
+
+/* ============================================================
    CAR VEHICLE SLIDE
    ============================================================ */
 .veh-car-slide { position: relative; overflow: hidden; padding-bottom: 70px; }

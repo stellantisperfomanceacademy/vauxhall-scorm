@@ -20,7 +20,6 @@
   add({ type: "cover", section: "Welcome" });
   add({ type: "objectives", section: "Welcome" });
   add({ type: "divider", section: "History", num: "01", title: "Vauxhall History", quote: "From a smithy to Britain's favourite brand. Quite a journey." });
-  add({ type: "origin", section: "History" });
   add({ type: "timeline", section: "History" });
   add({ type: "divider", section: "Cars", num: "02", title: "The 2026 Range: Cars", quote: "Let's meet the cars. Everything you need to know about each model, in plain English." });
   C.cars.forEach(function (v) { add({ type: "vehicle", section: "Cars", data: v }); });
@@ -71,7 +70,7 @@
       '<div class="hero">' +
       '<img src="images/' + id + '.jpg" alt="' + esc(name) + '" ' +
       "onerror=\"this.style.display='none';this.nextElementSibling.style.display='flex';\">" +
-      '<div class="vx-img" style="display:none"><span class="lbl">[ image ]<br>' + esc(name) + " — drop photo here:<br>images/" + id + ".jpg</span></div>' +
+      '<div class="vx-img" style="display:none"><span class="lbl">[ image ]<br>' + esc(name) + ' — drop photo here:<br>images/' + id + '.jpg</span></div>' +
       spots +
       "</div>"
     );
@@ -112,14 +111,6 @@
           '<h1 class="title">' + esc(s.title) + "</h1>" +
           '<div class="quote">"' + esc(s.quote) + '"</div>' + chrome(s, idx) + "</section>";
 
-      case "origin":
-        inner = '<div class="eyebrow">' + esc(C.nameOrigin.eyebrow) + "</div>" +
-          '<h2 class="title">A name 800 years in the making</h2>' +
-          '<div style="margin-top:18px" class="origin-body">' +
-          '<span class="didyou">Did you know? ' + esc(C.nameOrigin.didYouKnow) + "</span>" +
-          C.nameOrigin.body.map(function (p) { return "<p>" + esc(p) + "</p>"; }).join("") + "</div>";
-        return '<section class="slide active">' + inner + chrome(s, idx) + "</section>";
-
       case "timeline":
         inner = '<div class="tl-header"><div class="eyebrow">The Timeline</div>' +
           '<h2 class="title">Click a year to explore</h2></div>' +
@@ -135,6 +126,7 @@
           '<div class="tl-det-bg" id="tl-det-bg"></div>' +
           '<button class="tl-det-close" id="tl-det-close">&#10005; Close</button>' +
           '<div class="tl-det-body">' +
+          '<div class="tl-det-eyebrow" id="tl-det-eyebrow"></div>' +
           '<div class="tl-det-year" id="tl-det-year"></div>' +
           '<div class="tl-det-text" id="tl-det-text"></div>' +
           '<div class="tl-det-fact" id="tl-det-fact"></div>' +
@@ -200,11 +192,17 @@
           heroHTML(d.name, d.image, d.hotspots) +
           statsHTML(d.stats) +
           '<div class="veh-actions">' +
-          (d.funFact ? '<div class="funbox-sm"><b>Fun fact:</b> ' + esc(d.funFact) + '</div>' : '') +
           '<div class="veh-btns">' +
+          (d.funFact ? '<button class="veh-btn btn-fun" id="btn-fun">&#9733; Fun Fact</button>' : '') +
           '<button class="veh-btn btn-press" id="btn-press">&#128240; Press Quotes</button>' +
           (d.headToHead && d.headToHead.length ? '<button class="veh-btn btn-vs" id="btn-vs">&#9889; vs Rivals</button>' : '') +
           '</div></div>' +
+          (d.funFact
+            ? '<div class="veh-overlay fun-ov card-popup" id="fun-ov">' +
+              '<button class="ov-close" id="ov-close-fun">&#10005;</button>' +
+              '<div class="card-popup-head"><span class="eyebrow">Did you know?</span></div>' +
+              '<div class="card-popup-body"><p>' + esc(d.funFact) + '</p></div></div>'
+            : '') +
           pressOv + vsOv;
         return '<section class="slide veh-car-slide active">' + inner + chrome(s, idx) + '</section>';
 
@@ -374,6 +372,7 @@
   function wireTimeline(el) {
     var detail = el.querySelector("#tl-detail");
     var bg     = el.querySelector("#tl-det-bg");
+    var eyebrowEl = el.querySelector("#tl-det-eyebrow");
     var yearEl = el.querySelector("#tl-det-year");
     var textEl = el.querySelector("#tl-det-text");
     var factEl = el.querySelector("#tl-det-fact");
@@ -386,10 +385,21 @@
       var t = C.timeline[i];
       activeTl = i;
       bg.style.backgroundImage = "url(assets/timeline/" + t.year + ".jpg)";
-      yearEl.textContent = t.year + (t.title ? "  " + t.title : "");
+      if (eyebrowEl) {
+        eyebrowEl.textContent = t.eyebrow || "";
+        eyebrowEl.style.display = t.eyebrow ? "block" : "none";
+      }
+      yearEl.textContent = t.title ? t.title : t.year;
+      if (t.title) yearEl.setAttribute("data-year", t.year);
+      else yearEl.removeAttribute("data-year");
       textEl.textContent = t.text;
-      factEl.textContent = t.fact || "";
-      factEl.style.display = t.fact ? "block" : "none";
+      if (t.fact) {
+        factEl.innerHTML = "<b>Fun fact:</b> " + esc(t.fact);
+        factEl.style.display = "block";
+      } else {
+        factEl.textContent = "";
+        factEl.style.display = "none";
+      }
       prevB.disabled = i === 0;
       nextB.disabled = i === C.timeline.length - 1;
       detail.classList.add("open");
@@ -420,6 +430,13 @@
     el.addEventListener("click", function () {
       dots.forEach(function (d) { d.classList.remove("open"); });
     });
+    // fun fact overlay
+    var btnFun = el.querySelector("#btn-fun");
+    var funOv  = el.querySelector("#fun-ov");
+    if (btnFun && funOv) {
+      btnFun.addEventListener("click", function (e) { e.stopPropagation(); funOv.classList.add("open"); });
+      el.querySelector("#ov-close-fun").addEventListener("click", function (e) { e.stopPropagation(); funOv.classList.remove("open"); });
+    }
     // press overlay
     var btnPress = el.querySelector("#btn-press");
     var pressOv  = el.querySelector("#press-ov");

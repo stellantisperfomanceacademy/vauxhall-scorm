@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#0a0a28"/>
+  <rect x="0" y="250" width="960" height="2" fill="rgba(255,255,255,0.35)"/>
+  <text x="48" y="200" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="72" font-weight="700">1213</text>
+  <text x="48" y="240" fill="#EB001E" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">A name 800 years in the making</text>
+  <text x="48" y="480" fill="rgba(255,255,255,0.5)" font-family="Consolas, monospace" font-size="14">Placeholder - drop 1213.jpg here when ready</text>
+</svg>

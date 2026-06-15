@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vauxhall Live Scene Editor</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/author.css?v=18">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <strong>Live Scene Editor</strong>
+      <span class="sub">Drag, resize &amp; edit on canvas — export JSON when done</span>
+    </div>
+    <div class="top-actions">
+      <label class="mode-toggle"><input type="checkbox" id="live-mode"> Live preview mode</label>
+      <span id="save-status" class="save-status" aria-live="polite"></span>
+      <button type="button" id="btn-import" class="tb">Import</button>
+      <button type="button" id="btn-export" class="tb primary">Save &amp; Export</button>
+      <input type="file" id="file-import" accept="application/json,.json" hidden>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <aside class="panel left">
+      <section>
+        <h3>Scene</h3>
+        <label class="fld">Pick scene<select id="scene-select"></select></label>
+        <label class="fld">Hero / background image
+          <div class="file-row">
+            <input type="text" id="scene-bg" placeholder="images/corsa.jpg">
+            <button type="button" id="btn-bg-pick" class="mini">Pick</button>
+            <button type="button" id="btn-bg-upload" class="mini">Upload</button>
+          </div>
+        </label>
+        <input type="file" id="file-bg" accept="image/*" hidden>
+        <label class="fld">Page background colour
+          <input type="color" id="scene-bgcolor" value="#ffffff">
+        </label>
+        <div class="swatches" data-swatch-target="scene-bgcolor"></div>
+        <button type="button" id="btn-clear-bg" class="sm">Remove background image</button>
+        <button type="button" id="btn-reset-author" class="sm">Reset editor</button>
+      </section>
+
+      <section>
+        <h3>Add to canvas</h3>
+        <p class="hint">Click to add, then drag anywhere on the slide. Double-click text to edit.</p>
+        <div class="btn-grid">
+          <button type="button" data-add="hotspot">Hotspot</button>
+          <button type="button" data-add="text">Text</button>
+          <button type="button" data-add="button">Button</button>
+          <button type="button" data-add="image">Image box</button>
+        </div>
+      </section>
+
+      <section>
+        <h3>Pop-up cards</h3>
+        <button type="button" id="btn-add-popup" class="sm">+ Add pop-up</button>
+        <ul id="popup-list" class="item-list"></ul>
+      </section>
+
+      <section>
+        <h3>Layers</h3>
+        <ul id="element-list" class="item-list layers"></ul>
+      </section>
+    </aside>
+
+    <main class="canvas-wrap">
+      <div class="canvas-toolbar">
+        <span id="canvas-hint" class="canvas-hint">Click to select · Drag to move · Double-click image to swap · Ctrl+drag image to crop · Double-click text to edit</span>
+        <label><input type="checkbox" id="show-grid" checked> Grid</label>
+        <label><input type="checkbox" id="show-safe" checked> Safe area</label>
+      </div>
+      <div id="canvas-outer">
+        <div id="canvas-scaler">
+          <div id="canvas" class="canvas">
+            <div id="slide-root"></div>
+            <div id="canvas-popup" class="canvas-popup" hidden></div>
+          </div>
+        </div>
+        <div id="float-toolbar" class="float-toolbar" hidden>
+          <button type="button" data-act="dup" title="Duplicate">⧉</button>
+          <button type="button" data-act="top" title="Bring to front">⇈</button>
+          <button type="button" data-act="front" title="Forward">↑</button>
+          <button type="button" data-act="back" title="Backward">↓</button>
+          <button type="button" data-act="bottom" title="Send to back">⇊</button>
+          <button type="button" data-act="del" title="Delete">✕</button>
+        </div>
+      </div>
+    </main>
+
+    <aside class="panel right">
+      <section id="props-empty">
+        <p class="hint">Nothing selected.<br><br>Click anything on the canvas to edit it here — or double-click text to edit inline.</p>
+      </section>
+
+      <section id="props-element" hidden>
+        <h3>Selected element</h3>
+        <label class="fld">Type<input type="text" id="el-type" readonly></label>
+
+        <label class="fld" id="wrap-el-text">Text<textarea id="el-text" rows="3"></textarea></label>
+
+        <label class="fld" id="wrap-el-facts">Facts (one per line — shown inside the hotspot)
+          <textarea id="el-facts" rows="4" placeholder="Up to 200 miles range&#10;Rapid charge 20–80% in 30 min"></textarea>
+        </label>
+
+        <div id="wrap-el-image" hidden>
+          <label class="fld">Image
+            <div class="file-row">
+              <input type="text" id="el-src" placeholder="images/corsa.jpg">
+              <button type="button" id="btn-el-pick" class="mini">Pick</button>
+              <button type="button" id="btn-el-upload" class="mini">Upload</button>
+            </div>
+          </label>
+          <input type="file" id="file-el" accept="image/*" hidden>
+          <label class="fld">Fit
+            <select id="el-fit">
+              <option value="cover">Cover (fill &amp; crop)</option>
+              <option value="contain">Contain (fit inside)</option>
+              <option value="fill">Stretch</option>
+            </select>
+          </label>
+          <div id="wrap-el-crop">
+            <p class="hint">Double-click the image to swap it. Ctrl+drag inside the frame to reposition/crop; scroll to zoom. Drag the frame edge to move the box.</p>
+            <div class="row2">
+              <label class="fld">Crop X<input type="range" id="el-posx" min="0" max="100" value="50"></label>
+              <label class="fld">Crop Y<input type="range" id="el-posy" min="0" max="100" value="50"></label>
+            </div>
+            <label class="fld">Zoom<input type="range" id="el-zoom" min="100" max="300" value="100"></label>
+          </div>
+          <div class="row2">
+            <label class="fld">Corner radius<input type="number" id="el-radius" min="0" max="80" value="0"></label>
+            <label class="fld chk"><input type="checkbox" id="el-shadow"> Shadow</label>
+          </div>
+        </div>
+
+        <div class="row2" id="wrap-el-colors">
+          <label class="fld">Text colour<input type="color" id="el-color" value="#ffffff"></label>
+          <label class="fld">Fill colour<input type="color" id="el-bg" value="#EB001E"></label>
+        </div>
+        <div class="swatches" id="sw-el-color" data-swatch-target="el-color"></div>
+        <div class="swatches" id="sw-el-bg" data-swatch-target="el-bg"></div>
+
+        <div class="row2" id="wrap-el-font">
+          <label class="fld">Font px<input type="number" id="el-font" min="8" max="96" value="14"></label>
+          <label class="fld chk"><input type="checkbox" id="el-bold" checked> Bold</label>
+        </div>
+        <label class="fld">Click opens pop-up<select id="el-trigger"><option value="">— none —</option></select></label>
+        <div id="wrap-el-layer">
+          <label class="fld">Layer position<input type="number" id="el-z" min="1" max="999" value="1"></label>
+          <div class="layer-btns">
+            <button type="button" id="btn-z-top" class="mini" title="Bring to front">Front</button>
+            <button type="button" id="btn-z-up" class="mini" title="Forward">↑</button>
+            <button type="button" id="btn-z-down" class="mini" title="Backward">↓</button>
+            <button type="button" id="btn-z-bottom" class="mini" title="Send to back">Back</button>
+          </div>
+        </div>
+        <button type="button" id="btn-del-el" class="danger sm">Delete element</button>
+      </section>
+
+      <section id="props-native" hidden>
+        <h3>Slide element</h3>
+        <p class="hint" id="native-kind">Slide element</p>
+        <label class="fld" id="native-text-wrap">Text<textarea id="native-text" rows="3"></textarea></label>
+        <div id="native-img-wrap" hidden>
+          <p class="hint">Change the photo used on this slide.</p>
+          <div class="file-row">
+            <button type="button" id="btn-native-pick" class="mini">Pick image</button>
+            <button type="button" id="btn-native-upload" class="mini">Upload</button>
+          </div>
+        </div>
+        <p class="hint">Click to select · double-click to edit inline · or use the text box below. Drag to reposition.</p>
+        <button type="button" id="btn-native-reset" class="sm">Reset position</button>
+      </section>
+
+      <section id="props-popup" hidden>
+        <h3>Pop-up card</h3>
+        <label class="fld">Style
+          <select id="pop-template">
+            <option value="card-popup">Card (red header)</option>
+            <option value="info-panel">Info panel (blue)</option>
+            <option value="split-modal">Split modal</option>
+            <option value="dark-hud">Dark HUD</option>
+          </select>
+        </label>
+        <label class="fld">Eyebrow<input type="text" id="pop-eyebrow"></label>
+        <label class="fld">Title<input type="text" id="pop-title"></label>
+        <label class="fld">Body<textarea id="pop-body" rows="5"></textarea></label>
+        <label class="fld">Fun fact<textarea id="pop-fact" rows="2"></textarea></label>
+        <label class="fld">Accent<input type="color" id="pop-accent" value="#EB001E"></label>
+        <div class="swatches" data-swatch-target="pop-accent"></div>
+        <button type="button" id="btn-del-pop" class="danger sm">Delete pop-up</button>
+      </section>
+    </aside>
+  </div>
+
+  <div id="img-picker" class="img-picker" hidden>
+    <div class="img-picker-box">
+      <div class="img-picker-head">
+        <strong>Choose an image</strong>
+        <div class="img-picker-actions">
+          <button type="button" id="img-picker-upload" class="mini">Upload new</button>
+          <button type="button" id="img-picker-close" class="mini">✕</button>
+        </div>
+      </div>
+      <input type="file" id="file-picker" accept="image/*" hidden>
+      <div class="img-picker-grid" id="img-picker-grid"></div>
+    </div>
+  </div>
+
+  <script src="js/content.js"></script>
+  <script src="js/author.js?v=18"></script>
+</body>
+</html>

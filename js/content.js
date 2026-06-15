@@ -16,18 +16,14 @@ window.COURSE = {
     "Name discontinued models and explain what replaced them."
   ],
 
-  /* ---- SECTION 1: HISTORY ---- */
-  nameOrigin: {
-    eyebrow: "Where did the name come from?",
-    didYouKnow: "The Vauxhall name is over 800 years old.",
-    body: [
-      "In the 13th century, mercenary Sir Falkes de Breauté was granted land south of the Thames.",
-      'His home became known as "Fawkes Hall", which morphed into "Foxhall" and eventually "Vauxhall".',
-      "His personal crest, a mythical Griffin, is still the basis for the Vauxhall logo today!"
-    ]
-  },
-
   timeline: [
+    {
+      year: "1213",
+      title: "A name 800 years in the making",
+      eyebrow: "Where did the name come from?",
+      text: "In the 13th century, mercenary Sir Falkes de Breauté was granted land south of the Thames. His home became known as \"Fawkes Hall\", which morphed into \"Foxhall\" and eventually \"Vauxhall\".",
+      fact: "The Vauxhall name is over 800 years old. Sir Falkes de Breauté's personal crest — a mythical Griffin — is still the basis for the Vauxhall logo today."
+    },
     { year: "1857", text: "Alexander Wilson sets up a marine engine factory in Vauxhall, London. He names it after the area and so the story begins." },
     { year: "1903", text: "Vauxhall builds its very first car: a 5HP two-seater, steered by a tiller rather than a steering wheel, with no reverse gear whatsoever.", fact: "It cost 130 Guineas (around £136). Adjusted for inflation, that is roughly £17,000 today. Not bad for a car that could not go backwards." },
     { year: "1904", text: "Director Percy Kidner drives a new 6HP four-seater in the gruelling London-to-Glasgow reliability trial. Despite being the smallest car there, it lost only 7 out of a possible 1,000 points.", fact: "Top speed: 18 mph. Fuel economy: 37 mpg. Remarkable by any standard, let alone 1904." },

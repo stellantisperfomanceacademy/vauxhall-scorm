@@ -298,10 +298,7 @@
   /* ---- responsive scaling ---- */
   function scaleStage() {
     var wrap = document.getElementById("stage-wrap");
-    var pad = 24;
-    var sx = (wrap.clientWidth - pad * 2) / 960;
-    var sy = (wrap.clientHeight - 56 - pad * 2) / 540;
-    var k = Math.min(sx, sy, 1.6);
+    var k = Math.min(wrap.clientWidth / 960, wrap.clientHeight / 540);
     stage.style.transform = "scale(" + k + ")";
   }
   window.addEventListener("resize", scaleStage);

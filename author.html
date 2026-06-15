@@ -102,7 +102,31 @@
         <h3>Selected element</h3>
         <label class="fld">Type<input type="text" id="el-type" readonly></label>
 
-        <label class="fld" id="wrap-el-text">Text<textarea id="el-text" rows="3"></textarea></label>
+        <label class="fld" id="wrap-el-text">Text
+          <div id="wrap-el-format" hidden>
+            <div class="fmt-bar">
+              <button type="button" id="fmt-bold" class="fmt-btn" title="Bold"><b>B</b></button>
+              <button type="button" id="fmt-italic" class="fmt-btn" title="Italic"><i>I</i></button>
+              <span class="fmt-sep"></span>
+              <button type="button" id="fmt-left" class="fmt-btn active" title="Align left">&#8676;</button>
+              <button type="button" id="fmt-center" class="fmt-btn" title="Align centre">&#8596;</button>
+              <button type="button" id="fmt-right" class="fmt-btn" title="Align right">&#8677;</button>
+            </div>
+          </div>
+          <textarea id="el-text" rows="3"></textarea>
+        </label>
+        <div id="wrap-el-format-extra" hidden>
+          <div class="row2">
+            <label class="fld">Line height<input type="number" id="el-line-height" min="0.8" max="3" step="0.05" value="1.3"></label>
+            <label class="fld">Letter sp. em<input type="number" id="el-letter-spacing" min="-0.1" max="0.5" step="0.01" value="0"></label>
+          </div>
+          <label class="fld" style="display:none">Align<select id="el-align">
+            <option value="left">Left</option>
+            <option value="center">Centre</option>
+            <option value="right">Right</option>
+          </select></label>
+          <label class="fld" style="display:none">Italic<input type="checkbox" id="el-italic"></label>
+        </div>
 
         <label class="fld" id="wrap-el-facts">Facts (one per line — shown inside the hotspot)
           <textarea id="el-facts" rows="4" placeholder="Up to 200 miles range&#10;Rapid charge 20–80% in 30 min"></textarea>
@@ -167,13 +191,22 @@
         <p class="hint" id="native-kind">Slide element</p>
         <label class="fld" id="native-text-wrap">Text<textarea id="native-text" rows="3"></textarea></label>
         <div id="native-img-wrap" hidden>
-          <p class="hint">Change the photo used on this slide.</p>
-          <div class="file-row">
-            <button type="button" id="btn-native-pick" class="mini">Pick image</button>
+          <p class="hint crop-hint"><strong>Drag</strong> to reposition · <strong>Scroll</strong> to zoom · <strong>Double-click</strong> to swap image</p>
+          <div id="native-img-controls" hidden>
+            <div class="row2">
+              <label class="fld">Pan X<input type="range" id="native-posx" min="0" max="100" value="50"></label>
+              <label class="fld">Pan Y<input type="range" id="native-posy" min="0" max="100" value="50"></label>
+            </div>
+            <label class="fld">Zoom <span id="native-zoom-val" class="zoom-val">100%</span>
+              <input type="range" id="native-zoom" min="100" max="300" value="100">
+            </label>
+          </div>
+          <div class="file-row" style="margin-top:8px">
+            <button type="button" id="btn-native-pick" class="mini">↔ Swap image</button>
             <button type="button" id="btn-native-upload" class="mini">Upload</button>
           </div>
         </div>
-        <p class="hint">Click to select · double-click to edit inline · or use the text box below. Drag to reposition.</p>
+        <p class="hint" id="native-text-hint">Click to select · double-click to edit inline · or use the text box below. Drag to reposition.</p>
         <button type="button" id="btn-native-reset" class="sm">Reset position</button>
       </section>
 

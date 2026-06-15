@@ -189,6 +189,11 @@
         if (el.radius == null) el.radius = 0;
         if (el.zoom == null) el.zoom = 1;
       }
+      // text formatting defaults
+      if (el.italic == null) el.italic = false;
+      if (!el.align) el.align = "left";
+      if (el.lineHeight == null) el.lineHeight = 1.3;
+      if (el.letterSpacing == null) el.letterSpacing = 0;
     });
   }
 
@@ -383,12 +388,18 @@
       node.style.color = el.color || "#000037";
       node.style.fontSize = (el.fontSize || 16) + "px";
       node.style.fontWeight = el.bold ? "700" : "400";
-      node.textContent = el.text || "Double-click to edit";
+      node.style.fontStyle = el.italic ? "italic" : "";
+      node.style.textAlign = el.align || "left";
+      node.style.lineHeight = el.lineHeight || 1.3;
+      node.style.letterSpacing = el.letterSpacing ? (el.letterSpacing + "em") : "";
+      node.innerHTML = el.html || esc(el.text || "Double-click to edit");
     } else if (el.type === "button") {
       node.style.background = el.bg || "#EB001E";
       node.style.color = el.color || "#fff";
       node.style.fontSize = (el.fontSize || 13) + "px";
       node.style.fontWeight = el.bold ? "700" : "600";
+      node.style.fontStyle = el.italic ? "italic" : "";
+      node.style.letterSpacing = el.letterSpacing ? (el.letterSpacing + "em") : "0.08em";
       node.textContent = el.text || "BUTTON";
     } else if (el.type === "image") {
       node.style.borderRadius = (el.radius || 0) + "px";
@@ -495,7 +506,21 @@
   function applyNativePos(node, slot) {
     var sc = scene();
     var p = sc && sc.pos && sc.pos[slot];
-    node.style.transform = p ? ("translate(" + p.dx + "px," + p.dy + "px)") : "";
+    // For images: pan via object-position, zoom via width/height% (stays inside the box)
+    if (node.classList.contains("native-img")) {
+      var px = (p && p.imgPosX != null) ? p.imgPosX : 50;
+      var py = (p && p.imgPosY != null) ? p.imgPosY : 50;
+      var zm = (p && p.imgZoom != null) ? p.imgZoom : 1;
+      var pct = Math.round(zm * 100) + "%";
+      node.style.width = pct;
+      node.style.height = pct;
+      node.style.objectFit = "cover";
+      node.style.objectPosition = px + "% " + py + "%";
+      node.style.transform = "";
+      node.style.transformOrigin = "";
+    } else {
+      node.style.transform = p ? ("translate(" + p.dx + "px," + p.dy + "px)") : "";
+    }
   }
 
   function wireNative() {
@@ -506,6 +531,27 @@
       applyNativePos(node, slot);
       if (slot === selectedNativeSlot) node.classList.add("native-selected");
       node.addEventListener("mousedown", function (e) { startNativeDrag(e, node, slot, isImg, isText); });
+      if (isImg) {
+        // Double-click hero image → swap it
+        node.addEventListener("dblclick", function (e) {
+          e.stopPropagation();
+          if (state.liveMode) return;
+          openImagePicker("scene");
+        });
+        // Scroll to zoom
+        node.addEventListener("wheel", function (e) {
+          if (state.liveMode || selectedNativeSlot !== slot) return;
+          e.preventDefault(); e.stopPropagation();
+          var sc = scene();
+          if (!sc.pos) sc.pos = {};
+          if (!sc.pos[slot]) sc.pos[slot] = {};
+          var cur = sc.pos[slot].imgZoom != null ? sc.pos[slot].imgZoom : 1;
+          sc.pos[slot].imgZoom = clamp(cur + (e.deltaY > 0 ? -0.05 : 0.05), 1, 3);
+          applyNativePos(node, slot);
+          syncNativeImgSliders(slot);
+          persist(true);
+        }, { passive: false });
+      }
       if (isText) {
         node.addEventListener("dblclick", function (e) {
           e.stopPropagation();
@@ -528,11 +574,23 @@
     e.stopPropagation();
     selectNative(slot, isImg, isText, node);
     var sc = scene();
-    var p = (sc.pos && sc.pos[slot]) || { dx: 0, dy: 0 };
-    nativeInteraction = {
-      slot: slot, node: node, isImg: isImg,
-      sx: e.clientX, sy: e.clientY, odx: p.dx, ody: p.dy, moved: false, cur: null
-    };
+    var p = (sc.pos && sc.pos[slot]) || {};
+    if (isImg) {
+      // Drag repositions the image content (object-position) inside the frame
+      var box = node.getBoundingClientRect();
+      nativeInteraction = {
+        slot: slot, node: node, isImg: true, imgCrop: true,
+        sx: e.clientX, sy: e.clientY,
+        opx: p.imgPosX != null ? p.imgPosX : 50,
+        opy: p.imgPosY != null ? p.imgPosY : 50,
+        boxW: box.width, boxH: box.height, moved: false
+      };
+    } else {
+      nativeInteraction = {
+        slot: slot, node: node, isImg: false,
+        sx: e.clientX, sy: e.clientY, odx: p.dx || 0, ody: p.dy || 0, moved: false, cur: null
+      };
+    }
   }
 
   function selectNative(slot, isImg, isText, node) {
@@ -545,6 +603,8 @@
     var txt = isText != null ? isText : (n && n.classList.contains("ce"));
     document.getElementById("native-text-wrap").hidden = !txt;
     document.getElementById("native-img-wrap").hidden = !img;
+    var textHint = document.getElementById("native-text-hint");
+    if (textHint) textHint.hidden = img; // hide generic text hint for images
     document.getElementById("native-kind").textContent =
       slot === "hero" ? "Hero image" : (img ? "Image" : (txt ? "Text — " + slot : slot));
     if (txt && n) {
@@ -552,10 +612,51 @@
       var saved = sc && sc.over && sc.over[slot] != null ? sc.over[slot] : n.textContent.trim();
       document.getElementById("native-text").value = saved;
     }
+    // Show position/zoom sliders for images
+    var imgCtrl = document.getElementById("native-img-controls");
+    if (imgCtrl) imgCtrl.hidden = !img;
+    if (img) syncNativeImgSliders(slot);
     floatToolbar.hidden = true;
     slideRoot.querySelectorAll(".native-selected").forEach(function (x) { x.classList.remove("native-selected"); });
     if (n) n.classList.add("native-selected");
     refreshLists();
+  }
+
+  function syncNativeImgSliders(slot) {
+    var sc = scene();
+    var p = (sc && sc.pos && sc.pos[slot]) || {};
+    var px = document.getElementById("native-posx");
+    var py = document.getElementById("native-posy");
+    var zm = document.getElementById("native-zoom");
+    var zv = document.getElementById("native-zoom-val");
+    if (px) px.value = p.imgPosX != null ? p.imgPosX : 50;
+    if (py) py.value = p.imgPosY != null ? p.imgPosY : 50;
+    var zoom = p.imgZoom != null ? p.imgZoom : 1;
+    var pct = Math.round(zoom * 100);
+    if (zm) zm.value = pct;
+    if (zv) zv.textContent = pct + "%";
+  }
+
+  function applyNativeImgSliders() {
+    var slot = selectedNativeSlot;
+    if (!slot) return;
+    var sc = scene();
+    if (!sc.pos) sc.pos = {};
+    if (!sc.pos[slot]) sc.pos[slot] = {};
+    var px = document.getElementById("native-posx");
+    var py = document.getElementById("native-posy");
+    var zm = document.getElementById("native-zoom");
+    var zv = document.getElementById("native-zoom-val");
+    if (px) sc.pos[slot].imgPosX = parseInt(px.value, 10);
+    if (py) sc.pos[slot].imgPosY = parseInt(py.value, 10);
+    if (zm) {
+      sc.pos[slot].imgZoom = parseInt(zm.value, 10) / 100;
+      if (zv) zv.textContent = zm.value + "%";
+    }
+    var node = slideRoot.querySelector('[data-slot="' + slot + '"]');
+    if (node) applyNativePos(node, slot);
+    persist(true);
+    flashSaveStatus("Saved");
   }
 
   function saveNativeText() {
@@ -577,6 +678,7 @@
     if (sc.pos) delete sc.pos[selectedNativeSlot];
     persist();
     renderCanvas();
+    syncNativeImgSliders(selectedNativeSlot);
   }
 
   /* ---------------- popups ---------------- */
@@ -1013,6 +1115,10 @@
     document.getElementById("el-bg").value = /^#[0-9a-fA-F]{6}$/.test(el.bg || "") ? el.bg : "#EB001E";
     document.getElementById("el-font").value = el.fontSize || 14;
     document.getElementById("el-bold").checked = !!el.bold;
+    document.getElementById("el-italic").checked = !!el.italic;
+    document.getElementById("el-align").value = el.align || "left";
+    document.getElementById("el-line-height").value = el.lineHeight != null ? el.lineHeight : 1.3;
+    document.getElementById("el-letter-spacing").value = el.letterSpacing != null ? el.letterSpacing : 0;
     document.getElementById("el-fit").value = el.fit || "cover";
     document.getElementById("el-posx").value = el.posX != null ? el.posX : 50;
     document.getElementById("el-posy").value = el.posY != null ? el.posY : 50;
@@ -1033,6 +1139,14 @@
     document.getElementById("sw-el-color").hidden = !isText;
     document.getElementById("sw-el-bg").hidden = !(el.type === "button");
     document.getElementById("wrap-el-font").hidden = !isText;
+    // Format bar: bold/italic buttons reflect state
+    document.getElementById("fmt-bold").classList.toggle("active", !!el.bold);
+    document.getElementById("fmt-italic").classList.toggle("active", !!el.italic);
+    ["fmt-left","fmt-center","fmt-right"].forEach(function(id) {
+      document.getElementById(id).classList.toggle("active", el.align === id.replace("fmt-",""));
+    });
+    document.getElementById("wrap-el-format").hidden = !isText;
+    document.getElementById("wrap-el-format-extra").hidden = !isText;
 
     var textLabel = document.getElementById("el-text").closest("label");
     if (textLabel) textLabel.firstChild.textContent = isHotspot ? "Hotspot label" : "Text";
@@ -1115,7 +1229,8 @@
       color: type === "text" ? "#000037" : "#ffffff",
       bg: "#EB001E",
       fontSize: type === "text" ? 18 : 13,
-      bold: true, trigger: ""
+      bold: true, italic: false, align: "left", lineHeight: 1.3, letterSpacing: 0,
+      trigger: ""
     };
     sc.elements.push(el);
     persist();
@@ -1139,6 +1254,8 @@
 
   function readFormIntoElement(el) {
     el.text = document.getElementById("el-text").value;
+    // Clear html override when text is edited via sidebar (plain text)
+    el.html = null;
     el.facts = document.getElementById("el-facts").value.split("\n")
       .map(function (s) { return s.trim(); }).filter(Boolean);
     var srcVal = document.getElementById("el-src").value.trim();
@@ -1153,6 +1270,10 @@
     el.bg = document.getElementById("el-bg").value;
     el.fontSize = parseInt(document.getElementById("el-font").value, 10) || 14;
     el.bold = document.getElementById("el-bold").checked;
+    el.italic = document.getElementById("el-italic").checked;
+    el.align = document.getElementById("el-align").value;
+    el.lineHeight = parseFloat(document.getElementById("el-line-height").value) || 1.3;
+    el.letterSpacing = parseFloat(document.getElementById("el-letter-spacing").value) || 0;
     el.fit = document.getElementById("el-fit").value;
     el.posX = parseInt(document.getElementById("el-posx").value, 10);
     el.posY = parseInt(document.getElementById("el-posy").value, 10);
@@ -1311,6 +1432,14 @@
     if (state.liveMode) return; // live clicks handled per-node
     e.stopPropagation();
     e.preventDefault();
+    // For auth-el images: second click (already selected) auto-enters crop-edit mode
+    if (el.type === "image" && el.src && el.fit !== "fill" &&
+        state.selectedElementId === id && cropEditId !== id) {
+      enterCropEdit(id);
+      draggedSinceDown = false;
+      startCropDrag(e, el, e.currentTarget);
+      return;
+    }
     // In crop-edit mode: drag repositions the image inside the box
     if (cropEditId === id && el.type === "image" && el.src && el.fit !== "fill") {
       draggedSinceDown = false;
@@ -1338,12 +1467,27 @@
 
   function onMove(e) {
     if (nativeInteraction) {
-      if (Math.abs(e.clientX - nativeInteraction.sx) > 3 || Math.abs(e.clientY - nativeInteraction.sy) > 3) nativeInteraction.moved = true;
-      if (nativeInteraction.isImg) return; // hero image: click-to-swap, not draggable
-      var ndx = nativeInteraction.odx + (e.clientX - nativeInteraction.sx) / viewScale;
-      var ndy = nativeInteraction.ody + (e.clientY - nativeInteraction.sy) / viewScale;
-      nativeInteraction.node.style.transform = "translate(" + ndx + "px," + ndy + "px)";
-      nativeInteraction.cur = { dx: Math.round(ndx), dy: Math.round(ndy) };
+      var ni = nativeInteraction;
+      if (Math.abs(e.clientX - ni.sx) > 3 || Math.abs(e.clientY - ni.sy) > 3) ni.moved = true;
+      if (ni.imgCrop) {
+        // Drag repositions image content inside frame (object-position)
+        var sc = scene();
+        if (!sc.pos) sc.pos = {};
+        if (!sc.pos[ni.slot]) sc.pos[ni.slot] = {};
+        var sensX = 100 / Math.max(ni.boxW, 1);
+        var sensY = 100 / Math.max(ni.boxH, 1);
+        var cdx = (e.clientX - ni.sx) / viewScale;
+        var cdy = (e.clientY - ni.sy) / viewScale;
+        sc.pos[ni.slot].imgPosX = clamp(ni.opx - cdx * sensX, 0, 100);
+        sc.pos[ni.slot].imgPosY = clamp(ni.opy - cdy * sensY, 0, 100);
+        applyNativePos(ni.node, ni.slot);
+        syncNativeImgSliders(ni.slot);
+      } else {
+        var ndx = ni.odx + (e.clientX - ni.sx) / viewScale;
+        var ndy = ni.ody + (e.clientY - ni.sy) / viewScale;
+        ni.node.style.transform = "translate(" + ndx + "px," + ndy + "px)";
+        ni.cur = { dx: Math.round(ndx), dy: Math.round(ndy) };
+      }
       return;
     }
     if (!interaction) return;
@@ -1388,13 +1532,16 @@
     if (nativeInteraction) {
       var ni = nativeInteraction;
       nativeInteraction = null;
-      if (ni.cur) {
+      if (ni.imgCrop) {
+        // Already saved live; just persist final state
+        persist();
+      } else if (ni.cur) {
         var sc = scene();
         if (!sc.pos) sc.pos = {};
         sc.pos[ni.slot] = ni.cur;
         persist();
       }
-      if (!ni.moved && ni.isImg) openImagePicker("scene");
+      // Double-click to swap is handled by dblclick handler
       return;
     }
     if (interaction) {
@@ -1656,6 +1803,10 @@
       pickerTarget = "scene";
       document.getElementById("file-bg").click();
     };
+    ["native-posx", "native-posy", "native-zoom"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) { el.oninput = applyNativeImgSliders; el.onchange = applyNativeImgSliders; }
+    });
 
     document.getElementById("img-picker-upload").onclick = function () {
       document.getElementById("file-picker").click();
@@ -1728,10 +1879,37 @@
     });
 
     ["el-text", "el-facts", "el-src", "el-color", "el-bg", "el-font", "el-bold",
+     "el-italic", "el-align", "el-line-height", "el-letter-spacing",
      "el-fit", "el-posx", "el-posy", "el-zoom", "el-radius", "el-shadow", "el-z", "el-trigger"].forEach(function (id) {
       var n = document.getElementById(id);
-      n.oninput = saveElFromForm;
-      n.onchange = saveElFromForm;
+      if (n) { n.oninput = saveElFromForm; n.onchange = saveElFromForm; }
+    });
+
+    // Format-bar toggle buttons
+    document.getElementById("fmt-bold").onclick = function () {
+      var el = elById(state.selectedElementId); if (!el) return;
+      el.bold = !el.bold; el.html = null;
+      formSyncing = true; document.getElementById("el-bold").checked = el.bold; formSyncing = false;
+      this.classList.toggle("active", el.bold);
+      persist(true); patchCanvasElement(el); refreshLists();
+    };
+    document.getElementById("fmt-italic").onclick = function () {
+      var el = elById(state.selectedElementId); if (!el) return;
+      el.italic = !el.italic; el.html = null;
+      formSyncing = true; document.getElementById("el-italic").checked = el.italic; formSyncing = false;
+      this.classList.toggle("active", el.italic);
+      persist(true); patchCanvasElement(el); refreshLists();
+    };
+    ["fmt-left","fmt-center","fmt-right"].forEach(function (id) {
+      document.getElementById(id).onclick = function () {
+        var el = elById(state.selectedElementId); if (!el) return;
+        el.align = id.replace("fmt-",""); el.html = null;
+        formSyncing = true; document.getElementById("el-align").value = el.align; formSyncing = false;
+        ["fmt-left","fmt-center","fmt-right"].forEach(function(x) {
+          document.getElementById(x).classList.toggle("active", x === id);
+        });
+        persist(true); patchCanvasElement(el); refreshLists();
+      };
     });
     ["pop-template", "pop-eyebrow", "pop-title", "pop-body", "pop-fact", "pop-accent"].forEach(function (id) {
       document.getElementById(id).oninput = savePopFromForm;

@@ -335,6 +335,13 @@ body {
 
 /* crop hint in panel */
 .crop-hint { padding: 6px 8px; background: rgba(126,182,255,.1); border-left: 2px solid #7eb6ff; border-radius: 0 4px 4px 0; }
+.zoom-val { float: right; font-size: 10px; color: var(--muted); font-weight: 700; margin-right: 4px; }
+
+/* native hero image: grab cursor in editor */
+.canvas:not(.live) .author-slide .native-img { cursor: grab; }
+.canvas:not(.live) .author-slide .native-img:active { cursor: grabbing; }
+/* clip zoomed hero image inside its box */
+.author-slide .hero { overflow: hidden; }
 
 /* ============================================================
    CROP-EDIT MODE — Canva-style: double-click image to enter
@@ -362,6 +369,33 @@ body {
 .float-toolbar #btn-ft-crop-done { background: rgba(126,182,255,.18); color: #7eb6ff; font-weight: 700; }
 .float-toolbar #btn-ft-swap { color: var(--blue); }
 .float-toolbar .ft-sep { width: 1px; background: var(--line); height: 20px; margin: 0 2px; align-self: center; }
+
+.float-toolbar #btn-ft-swap { color: var(--blue); }
+.float-toolbar .ft-sep { width: 1px; background: var(--line); height: 20px; margin: 0 2px; align-self: center; }
+
+/* ============================================================
+   FORMAT BAR (text/button/hotspot formatting)
+   ============================================================ */
+.fmt-bar {
+  display: flex; align-items: center; gap: 2px;
+  background: rgba(0,0,0,.25); border: 1px solid var(--line);
+  border-radius: 4px 4px 0 0; padding: 3px 4px;
+  margin-bottom: -1px; /* merge with textarea border below */
+}
+.fmt-btn {
+  width: 26px; height: 26px; padding: 0; border: 1px solid transparent;
+  background: transparent; color: var(--text); border-radius: 3px;
+  cursor: pointer; font-size: 12px; line-height: 1; flex-shrink: 0;
+}
+.fmt-btn:hover { background: rgba(255,255,255,.1); border-color: var(--line); }
+.fmt-btn.active { background: rgba(235,0,30,.22); border-color: var(--red); color: #ffd2d2; }
+.fmt-sep { width: 1px; background: var(--line); height: 16px; margin: 0 3px; align-self: center; flex-shrink: 0; }
+/* Make the textarea connect to the fmt-bar visually */
+#wrap-el-format ~ #el-text,
+.fmt-bar + textarea,
+#el-text { border-radius: 0 0 4px 4px; margin-top: 0 !important; }
+/* wrap-el-format-extra spacing */
+#wrap-el-format-extra { margin-top: 4px; }
 
 /* ============================================================
    PALETTE SWATCHES

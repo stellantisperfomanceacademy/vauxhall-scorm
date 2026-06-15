@@ -39,6 +39,7 @@ body {
   border: 1px solid var(--line); background: transparent; color: var(--text);
   padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;
 }
+.tb:disabled { opacity: .35; cursor: default; }
 .tb.primary { background: var(--red); border-color: var(--red); }
 
 .workspace { display: flex; flex: 1; min-height: 0; }

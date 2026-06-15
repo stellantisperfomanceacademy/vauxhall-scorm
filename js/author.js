@@ -42,7 +42,10 @@
   var draggedSinceDown = false;
   var saveStatusTimer = null;
   var formSyncing = false;
-  var cropEditId = null; // element ID currently in crop-edit/reposition mode (double-click to enter)
+  var cropEditId = null; // element ID currently in crop-edit/reposition mode
+  var undoStack = []; // array of JSON strings
+  var redoStack = [];
+  var UNDO_MAX = 40;
 
   function esc(s) {
     return String(s == null ? "" : s)
@@ -241,6 +244,13 @@
     var payload = JSON.stringify({
       scenes: state.scenes, assets: state.assets, activeSceneId: state.activeSceneId
     });
+    // Push to undo stack (avoid duplicating identical states)
+    if (!undoStack.length || undoStack[undoStack.length - 1] !== payload) {
+      undoStack.push(payload);
+      if (undoStack.length > UNDO_MAX) undoStack.shift();
+      redoStack = [];
+      updateUndoButtons();
+    }
     try {
       localStorage.setItem(STORAGE_KEY, payload);
       sessionStorage.setItem(STORAGE_KEY, payload);
@@ -258,7 +268,43 @@
     }
   }
 
-  function scene() { return state.activeSceneId ? state.scenes[state.activeSceneId] : null; }
+  function updateUndoButtons() {
+    var u = document.getElementById("btn-undo");
+    var r = document.getElementById("btn-redo");
+    if (u) u.disabled = undoStack.length <= 1;
+    if (r) r.disabled = redoStack.length === 0;
+  }
+
+  function applySnapshot(payload) {
+    var data = JSON.parse(payload);
+    state.scenes = data.scenes || {};
+    state.assets = data.assets || [];
+    state.activeSceneId = data.activeSceneId || Object.keys(state.scenes)[0] || null;
+    state.selectedElementId = null;
+    state.selectedPopupId = null;
+    cropEditId = null;
+    try { localStorage.setItem(STORAGE_KEY, payload); } catch(e) {}
+    try { sessionStorage.setItem(STORAGE_KEY, payload); } catch(e) {}
+    populateScenes();
+    renderCanvas();
+    showProps(null);
+    updateUndoButtons();
+  }
+
+  function undo() {
+    if (undoStack.length <= 1) return;
+    redoStack.push(undoStack.pop());
+    applySnapshot(undoStack[undoStack.length - 1]);
+    flashSaveStatus("Undo");
+  }
+
+  function redo() {
+    if (!redoStack.length) return;
+    var snap = redoStack.pop();
+    undoStack.push(snap);
+    applySnapshot(snap);
+    flashSaveStatus("Redo");
+  }
   function elById(id) {
     var sc = scene();
     return sc ? sc.elements.find(function (e) { return e.id === id; }) : null;
@@ -358,7 +404,7 @@
     var tipBody = factsArr.length
       ? '<ul class="hs-facts">' + factsArr.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>"
       : "";
-    tip = '<div class="hs-tip"><strong>' + esc(el.text || "Hotspot") + "</strong>" + tipBody + "</div>";
+    tip = '<div class="hs-tip" style="font-weight:' + (el.bold ? '700' : '400') + ';font-style:' + (el.italic ? 'italic' : 'normal') + ';text-align:' + (el.align || 'left') + ';line-height:' + (el.lineHeight || 1.3) + ';letter-spacing:' + (el.letterSpacing ? el.letterSpacing + 'em' : 'normal') + ';font-size:' + (el.fontSize ? el.fontSize + 'px' : '') + '"><strong>' + esc(el.text || "Hotspot") + "</strong>" + tipBody + "</div>";
     node.innerHTML = '<span class="hs-num">' + (index + 1) + '</span><span class="hs-ring"></span>' + tip;
     node.addEventListener("mousedown", startDrag);
     node.addEventListener("click", function (e) {
@@ -1129,14 +1175,15 @@
 
     var isHotspot = el.type === "hotspot";
     var isImage = el.type === "image";
-    var isText = el.type === "text" || el.type === "button";
+    var isText = el.type === "text" || el.type === "button" || el.type === "hotspot";
+    var isTextEl = el.type === "text" || el.type === "button"; // for colour/fill fields
     document.getElementById("wrap-el-text").hidden = isImage;
     document.getElementById("wrap-el-facts").hidden = !isHotspot;
     document.getElementById("wrap-el-image").hidden = !isImage;
     var cropWrap = document.getElementById("wrap-el-crop");
     if (cropWrap) cropWrap.hidden = !isImage || el.fit === "fill";
-    document.getElementById("wrap-el-colors").hidden = !(isText);
-    document.getElementById("sw-el-color").hidden = !isText;
+    document.getElementById("wrap-el-colors").hidden = !isTextEl;
+    document.getElementById("sw-el-color").hidden = !isTextEl;
     document.getElementById("sw-el-bg").hidden = !(el.type === "button");
     document.getElementById("wrap-el-font").hidden = !isText;
     // Format bar: bold/italic buttons reflect state
@@ -2135,6 +2182,10 @@
     document.getElementById("btn-z-down").onclick = function () { nudgeZ(-1); };
     document.getElementById("btn-z-bottom").onclick = sendToBack;
 
+    document.getElementById("btn-undo").onclick = undo;
+    document.getElementById("btn-redo").onclick = redo;
+    updateUndoButtons();
+
     document.getElementById("show-grid").onchange = function (e) { canvas.classList.toggle("show-grid", e.target.checked); };
     document.getElementById("show-safe").onchange = function (e) { canvas.classList.toggle("show-safe", e.target.checked); };
 
@@ -2159,6 +2210,13 @@
         document.getElementById("img-picker").hidden = true;
       }
       if (e.key === "Enter" && cropEditId) { exitCropEdit(true); return; }
+      // Undo / Redo — skip when typing in an input
+      var tag = document.activeElement ? document.activeElement.tagName : "";
+      var editing = (tag === "INPUT" || tag === "TEXTAREA" || document.activeElement.isContentEditable);
+      if ((e.ctrlKey || e.metaKey) && !editing) {
+        if (e.key === "z" || e.key === "Z") { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
+        if (e.key === "y" || e.key === "Y") { e.preventDefault(); redo(); return; }
+      }
       if ((e.key === "Delete" || e.key === "Backspace") && state.selectedElementId &&
           document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA" &&
           !document.activeElement.isContentEditable) {

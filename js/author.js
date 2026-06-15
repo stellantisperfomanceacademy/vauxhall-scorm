@@ -305,6 +305,8 @@
     applySnapshot(snap);
     flashSaveStatus("Redo");
   }
+
+  function scene() { return state.activeSceneId ? state.scenes[state.activeSceneId] : null; }
   function elById(id) {
     var sc = scene();
     return sc ? sc.elements.find(function (e) { return e.id === id; }) : null;

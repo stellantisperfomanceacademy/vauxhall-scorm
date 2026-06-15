@@ -1676,20 +1676,235 @@
 
   /* ---------------- export ---------------- */
 
+  /* -------- minimal ZIP builder (no dependencies) -------- */
+
+  function strToBytes(s) {
+    var bytes = [];
+    for (var i = 0; i < s.length; i++) {
+      var c = s.charCodeAt(i);
+      if (c < 128) { bytes.push(c); }
+      else if (c < 2048) { bytes.push(192 | (c >> 6), 128 | (c & 63)); }
+      else { bytes.push(224 | (c >> 12), 128 | ((c >> 6) & 63), 128 | (c & 63)); }
+    }
+    return new Uint8Array(bytes);
+  }
+
+  function u32le(n) { return [n & 0xff, (n >> 8) & 0xff, (n >> 16) & 0xff, (n >> 24) & 0xff]; }
+  function u16le(n) { return [n & 0xff, (n >> 8) & 0xff]; }
+
+  function crc32(data) {
+    var table = crc32.t;
+    if (!table) {
+      table = crc32.t = new Int32Array(256);
+      for (var i = 0; i < 256; i++) {
+        var c = i;
+        for (var j = 0; j < 8; j++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        table[i] = c;
+      }
+    }
+    var crc = -1;
+    for (var k = 0; k < data.length; k++) crc = table[(crc ^ data[k]) & 0xff] ^ (crc >>> 8);
+    return (crc ^ -1) >>> 0;
+  }
+
+  function buildZip(files) {
+    // files = [{name, data: Uint8Array}]
+    var localHeaders = [];
+    var centralDir = [];
+    var offset = 0;
+
+    files.forEach(function (f) {
+      var nameBytes = strToBytes(f.name);
+      var crc = crc32(f.data);
+      var local = [].concat(
+        [0x50,0x4B,0x03,0x04], // local file header sig
+        u16le(20), u16le(0), u16le(0), // version, flags, compression (stored)
+        u16le(0), u16le(0),             // mod time, mod date
+        u32le(crc),
+        u32le(f.data.length), u32le(f.data.length),
+        u16le(nameBytes.length), u16le(0)
+      );
+      Array.prototype.push.apply(local, nameBytes);
+      var fileBytes = Array.from(f.data);
+
+      centralDir.push({ crc: crc, size: f.data.length, nameBytes: nameBytes, offset: offset });
+      offset += local.length + fileBytes.length;
+      localHeaders.push(local.concat(fileBytes));
+    });
+
+    var centralOffset = offset;
+    var central = [];
+    centralDir.forEach(function (d) {
+      var cd = [].concat(
+        [0x50,0x4B,0x01,0x02], // central dir sig
+        u16le(20), u16le(20), u16le(0), u16le(0), u16le(0),
+        u16le(0), u16le(0),
+        u32le(d.crc), u32le(d.size), u32le(d.size),
+        u16le(d.nameBytes.length), u16le(0), u16le(0),
+        u16le(0), u16le(0), u32le(0), u32le(d.offset)
+      );
+      Array.prototype.push.apply(cd, d.nameBytes);
+      Array.prototype.push.apply(central, cd);
+    });
+
+    var eocd = [].concat(
+      [0x50,0x4B,0x05,0x06], u16le(0), u16le(0),
+      u16le(files.length), u16le(files.length),
+      u32le(central.length), u32le(centralOffset), u16le(0)
+    );
+
+    var all = [];
+    localHeaders.forEach(function (h) { Array.prototype.push.apply(all, h); });
+    Array.prototype.push.apply(all, central);
+    Array.prototype.push.apply(all, eocd);
+    return new Uint8Array(all);
+  }
+
+  /* -------- export as ZIP: JSON with file paths + image files -------- */
+
   function exportJSON() {
-    var blob = new Blob([JSON.stringify({
+    // Collect all base64 data URLs used across scenes & assets
+    var imageMap = {}; // dataUrl -> filename
+    var imageFiles = []; // {name, data: Uint8Array}
+    var imageCount = 0;
+
+    function registerDataUrl(dataUrl) {
+      if (!dataUrl || dataUrl.indexOf("data:") !== 0) return dataUrl; // already a path
+      if (imageMap[dataUrl]) return imageMap[dataUrl];
+      imageCount++;
+      // Guess extension from mime type
+      var mime = dataUrl.split(";")[0].split(":")[1] || "image/jpeg";
+      var ext = mime.split("/")[1] || "jpg";
+      if (ext === "jpeg") ext = "jpg";
+      if (ext === "svg+xml") ext = "svg";
+      var fname = "images/uploaded-" + imageCount + "." + ext;
+      imageMap[dataUrl] = fname;
+      // Decode base64 to bytes
+      var b64 = dataUrl.split(",")[1];
+      var binary = atob(b64);
+      var bytes = new Uint8Array(binary.length);
+      for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      imageFiles.push({ name: fname, data: bytes });
+      return fname;
+    }
+
+    // Deep-clone scenes, replacing data: URLs with file paths
+    var scenes = JSON.parse(JSON.stringify(state.scenes));
+    Object.keys(scenes).forEach(function (id) {
+      var sc = scenes[id];
+      if (sc.background) sc.background = registerDataUrl(sc.background);
+      (sc.elements || []).forEach(function (el) {
+        if (el.src) el.src = registerDataUrl(el.src);
+      });
+    });
+
+    var assets = (state.assets || []).map(function (a) {
+      return { label: a.label, src: registerDataUrl(a.src) };
+    });
+
+    var json = JSON.stringify({
       exportedAt: new Date().toISOString(),
-      note: "Send this to Cursor. Re-upload any base64 images as files where noted.",
-      scenes: state.scenes, assets: state.assets
-    }, null, 2)], { type: "application/json" });
+      scenes: scenes,
+      assets: assets,
+      activeSceneId: state.activeSceneId
+    }, null, 2);
+
+    var jsonBytes = strToBytes(json);
+    var zipFiles = [{ name: "vauxhall-scenes.json", data: jsonBytes }].concat(imageFiles);
+    var zipData = buildZip(zipFiles);
+
+    var blob = new Blob([zipData], { type: "application/zip" });
     var a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "vauxhall-scenes-" + Date.now() + ".json";
+    a.download = "vauxhall-scenes-" + Date.now() + ".zip";
     a.click();
+    flashSaveStatus("Exported " + imageFiles.length + " image" + (imageFiles.length !== 1 ? "s" : "") + " + JSON");
     persist();
   }
 
   /* ---------------- scene picker ---------------- */
+
+  function loadImportedData(data) {
+    state.scenes = data.scenes || {};
+    state.assets = data.assets || [];
+    if (data.activeSceneId && state.scenes[data.activeSceneId]) {
+      state.activeSceneId = data.activeSceneId;
+    } else {
+      state.activeSceneId = Object.keys(state.scenes)[0] || null;
+    }
+    mergeMissingScenes();
+    persist(); populateScenes(); renderCanvas();
+    flashSaveStatus("Imported");
+  }
+
+  function importZip(file) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var buf = new Uint8Array(reader.result);
+        // Parse ZIP: find all local file entries
+        var files = {}; // name -> Uint8Array
+        var i = 0;
+        while (i < buf.length - 4) {
+          if (buf[i] === 0x50 && buf[i+1] === 0x4B && buf[i+2] === 0x03 && buf[i+3] === 0x04) {
+            var fnLen = buf[i+26] | (buf[i+27] << 8);
+            var extraLen = buf[i+28] | (buf[i+29] << 8);
+            var compSize = buf[i+18] | (buf[i+19] << 8) | (buf[i+20] << 16) | (buf[i+21] << 24);
+            var nameBytes = buf.slice(i+30, i+30+fnLen);
+            var name = new TextDecoder().decode(nameBytes);
+            var dataStart = i + 30 + fnLen + extraLen;
+            files[name] = buf.slice(dataStart, dataStart + compSize);
+            i = dataStart + compSize;
+          } else {
+            i++;
+          }
+        }
+        // Find the JSON file
+        var jsonEntry = files["vauxhall-scenes.json"];
+        if (!jsonEntry) {
+          // Try any .json file
+          var keys = Object.keys(files);
+          for (var k = 0; k < keys.length; k++) {
+            if (keys[k].endsWith(".json")) { jsonEntry = files[keys[k]]; break; }
+          }
+        }
+        if (!jsonEntry) { alert("No JSON found in ZIP"); return; }
+        var jsonStr = new TextDecoder().decode(jsonEntry);
+        var data = JSON.parse(jsonStr);
+
+        // Convert image file paths back to data URLs for in-memory use
+        function restoreUrl(path) {
+          if (!path || path.indexOf("data:") === 0) return path;
+          if (files[path]) {
+            var bytes = files[path];
+            var ext = path.split(".").pop().toLowerCase();
+            var mime = ext === "png" ? "image/png" : ext === "svg" ? "image/svg+xml" : ext === "webp" ? "image/webp" : "image/jpeg";
+            var bin = "";
+            for (var b = 0; b < bytes.length; b++) bin += String.fromCharCode(bytes[b]);
+            return "data:" + mime + ";base64," + btoa(bin);
+          }
+          return path; // already a relative path (e.g. images/corsa.jpg)
+        }
+
+        Object.keys(data.scenes || {}).forEach(function (id) {
+          var sc = data.scenes[id];
+          if (sc.background) sc.background = restoreUrl(sc.background);
+          (sc.elements || []).forEach(function (el) {
+            if (el.src) el.src = restoreUrl(el.src);
+          });
+        });
+        (data.assets || []).forEach(function (a) {
+          a.src = restoreUrl(a.src);
+        });
+
+        loadImportedData(data);
+      } catch (err) {
+        console.error(err);
+        alert("Could not read ZIP: " + err.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
 
   function sceneSortKey(id) {
     var sc = state.scenes[id];
@@ -1842,18 +2057,18 @@
     document.getElementById("file-import").onchange = function (e) {
       var f = e.target.files[0];
       if (!f) return;
-      var r = new FileReader();
-      r.onload = function () {
-        try {
-          var data = JSON.parse(r.result);
-          state.scenes = data.scenes;
-          state.assets = data.assets || [];
-          state.activeSceneId = Object.keys(state.scenes)[0];
-          mergeMissingScenes();
-          persist(); populateScenes(); renderCanvas();
-        } catch (err) { alert("Invalid JSON"); }
-      };
-      r.readAsText(f);
+      e.target.value = "";
+      if (f.name.toLowerCase().endsWith(".zip")) {
+        importZip(f);
+      } else {
+        var r = new FileReader();
+        r.onload = function () {
+          try {
+            loadImportedData(JSON.parse(r.result));
+          } catch (err) { alert("Invalid JSON"); }
+        };
+        r.readAsText(f);
+      }
     };
     document.getElementById("btn-import").onclick = function () { document.getElementById("file-import").click(); };
 

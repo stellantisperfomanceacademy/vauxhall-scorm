@@ -1,0 +1,11 @@
+{
+  "name": "vauxhall-scorm",
+  "version": "1.0.0",
+  "description": "Vauxhall Product & Technology 2026 — SCORM 1.2 eLearning module",
+  "private": true,
+  "scripts": {
+    "start": "npx serve . --listen 3000 --no-clipboard",
+    "build": "powershell -ExecutionPolicy Bypass -File ./build.ps1",
+    "dev": "npm run build && npx serve . --listen 3000 --no-clipboard"
+  }
+}

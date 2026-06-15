@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="vauxhall-product-technology-2026" version="1.0"
+  xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+  xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+    http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+  <organizations default="vx-org">
+    <organization identifier="vx-org">
+      <title>Vauxhall Product &amp; Technology 2026</title>
+      <item identifier="item-1" identifierref="resource-1">
+        <title>Vauxhall Product &amp; Technology 2026</title>
+        <adlcp:masteryscore>75</adlcp:masteryscore>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="resource-1" type="webcontent" adlcp:scormtype="sco" href="index.html">
+      <file href="index.html"/>
+      <file href="css/styles.css"/>
+      <file href="js/scorm-api.js"/>
+      <file href="js/content.js"/>
+      <file href="js/engine.js"/>
+      <file href="assets/fonts/VauxhallNeue-Light.ttf"/>
+      <file href="assets/fonts/VauxhallNeue-Regular.ttf"/>
+      <file href="assets/fonts/VauxhallNeue-Bold.ttf"/>
+      <file href="assets/fonts/VauxhallNeue-Black.ttf"/>
+      <file href="assets/img/logo-h-white.png"/>
+      <file href="assets/img/logo-h-blue.png"/>
+      <file href="assets/img/logo-h-red.png"/>
+      <file href="assets/img/logo-v-white.png"/>
+      <file href="assets/img/logo-v-blue.png"/>
+      <file href="assets/img/logo-v-red.png"/>
+      <file href="assets/img/roundel-white.png"/>
+      <file href="assets/img/roundel-blue.png"/>
+      <file href="assets/img/roundel-red.png"/>
+    </resource>
+  </resources>
+</manifest>

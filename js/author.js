@@ -42,7 +42,7 @@
   var draggedSinceDown = false;
   var saveStatusTimer = null;
   var formSyncing = false;
-  var cropModeActive = false; // true = drag on selected image repositions (no Ctrl needed)
+  var cropEditId = null; // element ID currently in crop-edit/reposition mode (double-click to enter)
 
   function esc(s) {
     return String(s == null ? "" : s)
@@ -402,7 +402,8 @@
         img.onerror = function () { node.innerHTML = '<div class="ph">Missing image</div>'; };
         img.addEventListener("mousedown", function (e) {
           if (state.liveMode || !el.src || el.fit === "fill") return;
-          if (!(e.ctrlKey || e.metaKey || cropModeActive)) return;
+          // fire crop drag if in crop-edit mode OR Ctrl held as power-user shortcut
+          if (cropEditId !== el.id && !(e.ctrlKey || e.metaKey)) return;
           e.stopPropagation();
           startCropDrag(e, el, node);
         });
@@ -432,7 +433,14 @@
     node.addEventListener("dblclick", function (e) {
       e.stopPropagation();
       if (state.liveMode) return;
-      if (el.type === "image") { openImagePicker("element"); return; }
+      if (el.type === "image") {
+        if (!el.src) { openImagePicker("element"); return; }
+        // Double-click in crop-edit mode → swap image instead
+        if (cropEditId === el.id) { exitCropEdit(false); openImagePicker("element"); return; }
+        selectElement(el.id);
+        enterCropEdit(el.id);
+        return;
+      }
       if (el.type === "text" || el.type === "button") startInlineEdit(node, el);
     });
     return node;
@@ -752,6 +760,7 @@
   }
 
   function renderCanvas() {
+    exitCropEdit(false);
     flushActiveEdits();
     var sc = scene();
     if (!sc) return;
@@ -820,6 +829,8 @@
       ? buildHotspotNode(el, hotspotIndexById(el.id))
       : buildNode(el);
     container.replaceChild(neu, old);
+    // Restore crop-editing class if this element is still in crop-edit mode
+    if (cropEditId === el.id) neu.classList.add("crop-editing");
     reorderElementsInDom();
     markSelection();
   }
@@ -881,6 +892,16 @@
     floatToolbar.hidden = false;
     floatToolbar.style.left = (r.left - outer.left + r.width / 2) + "px";
     floatToolbar.style.top = (r.top - outer.top) + "px";
+    // Show image-specific buttons
+    var el = elById(state.selectedElementId);
+    var isImg = el && el.type === "image" && !!el.src;
+    var inCrop = cropEditId === state.selectedElementId;
+    var swapBtn = document.getElementById("btn-ft-swap");
+    var doneBtn = document.getElementById("btn-ft-crop-done");
+    var sep = document.getElementById("ft-sep-crop");
+    if (swapBtn) swapBtn.hidden = !isImg;
+    if (doneBtn) doneBtn.hidden = !inCrop;
+    if (sep) sep.hidden = !isImg;
   }
 
   /* ---------------- lists ---------------- */
@@ -1026,21 +1047,39 @@
   }
 
   function selectElement(id) {
+    if (cropEditId && cropEditId !== id) exitCropEdit(false);
     state.selectedElementId = id;
     state.selectedPopupId = null;
     clearNativeSelection();
-    // exit crop mode when switching elements
-    if (cropModeActive) {
-      cropModeActive = false;
-      canvas.classList.remove("crop-mode");
-      var btn = document.getElementById("btn-crop-mode");
-      if (btn) btn.classList.remove("active");
-    }
     var el = elById(id);
     if (!el) { showProps(null); return; }
     showProps("element");
     fillElementForm(el);
     markSelection();
+  }
+
+  function enterCropEdit(id) {
+    var el = elById(id);
+    if (!el || el.type !== "image" || !el.src || el.fit === "fill") return;
+    cropEditId = id;
+    var node = slideRoot.querySelector('[data-id="' + id + '"]');
+    if (node) node.classList.add("crop-editing");
+    canvas.classList.add("crop-edit-active");
+    document.getElementById("canvas-hint").textContent = "↔ Drag to reposition · Scroll to zoom · Double-click to swap image · Enter or Esc to finish";
+    updateFloatToolbar();
+  }
+
+  function exitCropEdit(doSave) {
+    if (!cropEditId) return;
+    var node = slideRoot.querySelector('[data-id="' + cropEditId + '"]');
+    if (node) node.classList.remove("crop-editing");
+    cropEditId = null;
+    canvas.classList.remove("crop-edit-active");
+    document.getElementById("canvas-hint").textContent = state.liveMode
+      ? "Live preview — click hotspots & buttons to test pop-ups. Untick to edit."
+      : "Click to select · Drag to move · Double-click image to reposition/crop · Double-click text to edit";
+    updateFloatToolbar();
+    if (doSave) persist();
   }
 
   function selectPopup(id) {
@@ -1272,6 +1311,12 @@
     if (state.liveMode) return; // live clicks handled per-node
     e.stopPropagation();
     e.preventDefault();
+    // In crop-edit mode: drag repositions the image inside the box
+    if (cropEditId === id && el.type === "image" && el.src && el.fit !== "fill") {
+      draggedSinceDown = false;
+      startCropDrag(e, el, e.currentTarget);
+      return;
+    }
     if (state.selectedElementId !== id) selectElement(id);
     draggedSinceDown = false;
     var rect = containerForEl(el).getBoundingClientRect();
@@ -1522,11 +1567,12 @@
   /* ---------------- live mode ---------------- */
 
   function setLiveMode(on) {
+    exitCropEdit(false);
     state.liveMode = on;
     canvas.classList.toggle("live", on);
     document.getElementById("canvas-hint").textContent = on
       ? "Live preview — click hotspots & buttons to test pop-ups. Untick to edit."
-      : "Click to select · Drag to move · Double-click image to swap · Ctrl+drag image to crop";
+      : "Click to select · Drag to move · Double-click image to reposition/crop · Double-click text to edit";
     if (on) {
       state.selectedElementId = null;
       state.selectedPopupId = null;
@@ -1640,12 +1686,7 @@
     document.getElementById("btn-del-pop").onclick = deleteSelected;
     document.getElementById("btn-export").onclick = exportJSON;
 
-    document.getElementById("btn-crop-mode").onclick = function () {
-      cropModeActive = !cropModeActive;
-      canvas.classList.toggle("crop-mode", cropModeActive);
-      this.classList.toggle("active", cropModeActive);
-      this.textContent = cropModeActive ? "✓ Repositioning on" : "Drag to reposition";
-    };
+    // (crop-edit entered via double-click on image; no separate button needed)
 
     document.getElementById("file-import").onchange = function (e) {
       var f = e.target.files[0];
@@ -1681,6 +1722,8 @@
         if (a === "front") nudgeZ(1);
         if (a === "back") nudgeZ(-1);
         if (a === "bottom") sendToBack();
+        if (a === "swap") { exitCropEdit(false); openImagePicker("element"); }
+        if (a === "crop-done") exitCropEdit(true);
       };
     });
 
@@ -1706,6 +1749,7 @@
       if (state.liveMode) return;
       if (e.target.closest(".auth-el")) return;
       if (e.target.closest("[data-slot]")) return;
+      exitCropEdit(true);
       state.selectedElementId = null;
       state.selectedPopupId = null;
       clearNativeSelection();
@@ -1716,7 +1760,12 @@
     document.addEventListener("mousemove", onMove);
     document.addEventListener("mouseup", onUp);
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") { closeCanvasPopup(); document.getElementById("img-picker").hidden = true; }
+      if (e.key === "Escape") {
+        exitCropEdit(true);
+        closeCanvasPopup();
+        document.getElementById("img-picker").hidden = true;
+      }
+      if (e.key === "Enter" && cropEditId) { exitCropEdit(true); return; }
       if ((e.key === "Delete" || e.key === "Backspace") && state.selectedElementId &&
           document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA" &&
           !document.activeElement.isContentEditable) {

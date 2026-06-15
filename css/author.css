@@ -240,14 +240,14 @@ body {
 
 .float-toolbar {
   position: absolute; z-index: 100;
-  display: flex; gap: 4px; padding: 4px;
+  display: flex; align-items: center; gap: 4px; padding: 4px;
   background: #fff; border-radius: 6px;
   box-shadow: 0 4px 16px rgba(0,0,0,.4);
   transform: translate(-50%, -100%);
   margin-top: -8px;
 }
 .float-toolbar button {
-  width: 30px; height: 30px; border: none; background: transparent;
+  height: 30px; min-width: 30px; padding: 0 6px; border: none; background: transparent;
   cursor: pointer; border-radius: 4px; font-size: 14px; color: var(--blue);
 }
 .float-toolbar button[data-act="del"] { color: var(--red); }
@@ -333,15 +333,35 @@ body {
 .li-native { opacity: .82; }
 .li-native:hover { opacity: 1; }
 
-/* crop mode toggle button */
-.crop-mode-btn {
-  width: 100%; padding: 7px 10px; margin-bottom: 8px;
-  border: 1px dashed var(--line); background: rgba(255,255,255,.04);
-  color: var(--text); border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; text-align: left;
+/* crop hint in panel */
+.crop-hint { padding: 6px 8px; background: rgba(126,182,255,.1); border-left: 2px solid #7eb6ff; border-radius: 0 4px 4px 0; }
+
+/* ============================================================
+   CROP-EDIT MODE — Canva-style: double-click image to enter
+   ============================================================ */
+/* Visual frame while in crop-edit mode */
+.auth-el.crop-editing {
+  border-color: #7eb6ff !important;
+  box-shadow: 0 0 0 2px #7eb6ff, 0 4px 24px rgba(0,0,0,.45) !important;
+  outline: none;
 }
-.crop-mode-btn.active { border-color: var(--red); background: rgba(235,0,30,.18); color: #ffd2d2; }
-/* when crop mode is on, selected image shows grab cursor without needing Ctrl */
-.canvas.crop-mode .auth-el.type-image.selected img { cursor: grab; }
+/* Overlay banner at the top of the image */
+.auth-el.crop-editing::before {
+  content: "\2194  Drag to reposition \00b7 Scroll to zoom";
+  position: absolute; z-index: 20;
+  top: 0; left: 0; right: 0;
+  background: rgba(20,80,200,.82);
+  color: #fff; font-size: 10px; font-weight: 600; letter-spacing: .04em;
+  padding: 4px 8px; pointer-events: none; white-space: nowrap; overflow: hidden;
+}
+/* Grab cursor on the image while in crop-edit mode */
+.auth-el.crop-editing img { cursor: grab !important; }
+.auth-el.crop-editing.cropping img { cursor: grabbing !important; }
+
+/* Float toolbar Done button highlight */
+.float-toolbar #btn-ft-crop-done { background: rgba(126,182,255,.18); color: #7eb6ff; font-weight: 700; }
+.float-toolbar #btn-ft-swap { color: var(--blue); }
+.float-toolbar .ft-sep { width: 1px; background: var(--line); height: 20px; margin: 0 2px; align-self: center; }
 
 /* ============================================================
    PALETTE SWATCHES

@@ -68,7 +68,7 @@
 
     <main class="canvas-wrap">
       <div class="canvas-toolbar">
-        <span id="canvas-hint" class="canvas-hint">Click to select · Drag to move · Double-click image to swap · Ctrl+drag image to crop · Double-click text to edit</span>
+        <span id="canvas-hint" class="canvas-hint">Click to select · Drag to move · Double-click image to reposition/crop · Double-click text to edit</span>
         <label><input type="checkbox" id="show-grid" checked> Grid</label>
         <label><input type="checkbox" id="show-safe" checked> Safe area</label>
       </div>
@@ -80,6 +80,9 @@
           </div>
         </div>
         <div id="float-toolbar" class="float-toolbar" hidden>
+          <button type="button" data-act="swap" id="btn-ft-swap" title="Swap image" hidden>↔ Swap</button>
+          <button type="button" data-act="crop-done" id="btn-ft-crop-done" title="Finish repositioning" hidden>✓ Done</button>
+          <span class="ft-sep" id="ft-sep-crop" hidden></span>
           <button type="button" data-act="dup" title="Duplicate">⧉</button>
           <button type="button" data-act="top" title="Bring to front">⇈</button>
           <button type="button" data-act="front" title="Forward">↑</button>
@@ -122,8 +125,7 @@
             </select>
           </label>
           <div id="wrap-el-crop">
-            <p class="hint">Use the sliders below to reposition. Or click <strong>Drag to reposition</strong> then drag directly on the image.</p>
-            <button type="button" id="btn-crop-mode" class="crop-mode-btn">Drag to reposition</button>
+            <p class="hint crop-hint"><strong>Double-click</strong> the image on the canvas to enter reposition mode — then drag to pan, scroll to zoom. Use the sliders below for precise control.</p>
             <div class="row2">
               <label class="fld">Crop X<input type="range" id="el-posx" min="0" max="100" value="50"></label>
               <label class="fld">Crop Y<input type="range" id="el-posy" min="0" max="100" value="50"></label>

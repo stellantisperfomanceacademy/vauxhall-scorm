@@ -56,9 +56,14 @@
     if (hotspots && hotspots.length) {
       spots = '<div class="hs-layer">' +
         hotspots.map(function (h, i) {
-          return '<button class="hs-dot" style="left:' + h.x + '%;top:' + h.y + '%" data-hs="' + i + '">' +
+          var flip = h.y < 46 ? " hs-flip" : "";
+          var tipBody = h.facts && h.facts.length
+            ? '<ul class="hs-facts">' + h.facts.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>"
+            : "<p>" + esc(h.detail || "") + "</p>";
+          return '<button class="hs-dot' + flip + '" style="left:' + h.x + '%;top:' + h.y + '%" data-hs="' + i + '">' +
+            '<span class="hs-num">' + (i + 1) + "</span>" +
             '<span class="hs-ring"></span>' +
-            '<div class="hs-tip"><strong>' + esc(h.label) + '</strong><p>' + esc(h.detail) + '</p></div>' +
+            '<div class="hs-tip"><strong>' + esc(h.label) + '</strong>' + tipBody + '</div>' +
             '</button>';
         }).join("") + '</div>';
     }
@@ -66,7 +71,7 @@
       '<div class="hero">' +
       '<img src="images/' + id + '.jpg" alt="' + esc(name) + '" ' +
       "onerror=\"this.style.display='none';this.nextElementSibling.style.display='flex';\">" +
-      '<div class="vx-img" style="display:none"><span class="lbl">[ image ]<br>' + esc(name) + " — drop photo at<br>images/" + id + ".jpg</span></div>" +
+      '<div class="vx-img" style="display:none"><span class="lbl">[ image ]<br>' + esc(name) + " — drop photo here:<br>images/" + id + ".jpg</span></div>' +
       spots +
       "</div>"
     );
@@ -116,57 +121,92 @@
         return '<section class="slide active">' + inner + chrome(s, idx) + "</section>";
 
       case "timeline":
-        inner = '<div class="tl-header"><div class="eyebrow">The Timeline</div><h2 class="title">The story so far</h2></div>' +
-          '<div class="tl-h-outer">' +
-          '<button class="tl-arrow" id="tl-prev" disabled>&#8592;</button>' +
-          '<div class="tl-h-scroll" id="tl-scroll">' +
-          '<div class="tl-h-inner">' +
-          '<div class="tl-h-rail"></div>' +
+        inner = '<div class="tl-header"><div class="eyebrow">The Timeline</div>' +
+          '<h2 class="title">Click a year to explore</h2></div>' +
+          '<div class="tl-grid">' +
           C.timeline.map(function (t, i) {
-            var above = (i % 2 === 0);
-            var card = '<div class="tl-h-card">' +
-              '<div class="tl-h-year">' + esc(t.year) + (t.title ? ' <span>' + esc(t.title) + '</span>' : '') + '</div>' +
-              '<div class="tl-h-text">' + esc(t.text) + '</div>' +
-              (t.fact ? '<div class="tl-h-fact">' + esc(t.fact) + '</div>' : '') +
-              '</div>';
-            return '<div class="tl-h-item ' + (above ? 'tl-up' : 'tl-dn') + '">' +
-              (above ? card + '<div class="tl-h-stem"></div>' : '') +
-              '<div class="tl-h-dot"></div>' +
-              (!above ? '<div class="tl-h-stem"></div>' + card : '') +
-              '</div>';
-          }).join('') +
-          '</div></div>' +
-          '<button class="tl-arrow" id="tl-next">&#8594;</button>' +
-          '</div>';
-        return '<section class="slide tl-slide active">' + inner + chrome(s, idx) + '</section>';
+            return '<button class="tl-tile" data-tl="' + i + '" ' +
+              'style="background-image:url(assets/timeline/' + esc(t.year) + '.jpg)">' +
+              '<div class="tl-tile-yr">' + esc(t.year) + '</div>' +
+              (t.title ? '<div class="tl-tile-tag">' + esc(t.title) + '</div>' : '') +
+              '</button>';
+          }).join("") + '</div>' +
+          '<div class="tl-detail" id="tl-detail">' +
+          '<div class="tl-det-bg" id="tl-det-bg"></div>' +
+          '<button class="tl-det-close" id="tl-det-close">&#10005; Close</button>' +
+          '<div class="tl-det-body">' +
+          '<div class="tl-det-year" id="tl-det-year"></div>' +
+          '<div class="tl-det-text" id="tl-det-text"></div>' +
+          '<div class="tl-det-fact" id="tl-det-fact"></div>' +
+          '<div class="tl-det-nav">' +
+          '<button class="tl-det-btn" id="tl-det-prev">&#8592; Prev</button>' +
+          '<button class="tl-det-btn" id="tl-det-next">Next &#8594;</button>' +
+          '</div></div></div>';
+        return '<section class="slide tl-new-slide active">' + inner + chrome(s, idx) + '</section>';
 
       case "vehicle":
-        inner = '<div class="veh-head"><div>' +
-          '<div class="eyebrow">' + (s.van ? "Van" : "Car") + " · " + esc(d.tagline) + "</div>" +
-          '<h2 class="title">' + esc(d.name) + "</h2></div></div>" +
-          heroHTML(d.name, d.image, d.hotspots) +
-          (d.pitch ? '<div class="pitch">' + esc(d.pitch) + "</div>" : "") +
-          statsHTML(d.stats) +
-          '<div class="cols"><div class="block"><h4>Key Facts</h4><ul class="facts">' +
-          d.keyFacts.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>" +
-          (d.funFact ? '<div class="funbox"><b>Fun fact:</b> ' + esc(d.funFact) + "</div>" : "") +
-          "</div><div class=\"block\">" +
-          (d.headToHead && d.headToHead.length ?
-            '<h4>Head to Head</h4><div class="h2h">' +
-            '<div class="h2h-head"><span>Vauxhall</span><span class="h2h-vs">vs</span><span>Rival</span></div>' +
+        if (s.van) {
+          // Van layout: compact with key facts + press
+          inner = '<div class="veh-head"><div>' +
+            '<div class="eyebrow">Van · ' + esc(d.tagline) + '</div>' +
+            '<h2 class="title">' + esc(d.name) + '</h2></div></div>' +
+            heroHTML(d.name, d.image, null) +
+            statsHTML(d.stats) +
+            '<div class="cols"><div class="block"><h4>Key Facts</h4><ul class="facts">' +
+            d.keyFacts.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>" +
+            (d.funFact ? '<div class="funbox"><b>Fun fact:</b> ' + esc(d.funFact) + "</div>" : "") +
+            '</div><div class="block"><h4>What the press say</h4>' +
+            '<div class="press' + (d.press.length === 1 ? " one" : "") + '">' +
+            d.press.map(function (p) {
+              return '<div class="quote"><div class="q">"' + esc(p.quote) + '"</div><div class="s">' + esc(p.src) + "</div></div>";
+            }).join("") + "</div></div></div>";
+          return '<section class="slide active"><div class="scroll">' + inner + "</div>" + chrome(s, idx) + "</section>";
+        }
+        // Car layout: taller hero with hotspots, press newsstand, VS overlays
+        var h2hRows = (d.headToHead && d.headToHead.length)
+          ? '<div class="h2h"><div class="h2h-head"><span>Vauxhall</span><span class="h2h-vs">vs</span><span>Rival</span></div>' +
             d.headToHead.map(function (h) {
-              return '<div class="h2h-row">' +
-                '<div class="h2h-label">' + esc(h.label) + '</div>' +
+              return '<div class="h2h-row"><div class="h2h-label">' + esc(h.label) + '</div>' +
                 '<div class="h2h-vx">' + esc(h.vauxhall) + '</div>' +
-                '<div class="h2h-rv">' + esc(h.rival) + '</div>' +
-                '</div>';
-            }).join('') + '</div>' : '') +
-          "<h4 style=\"margin-top:14px\">What the press say</h4>" +
-          '<div class="press' + (d.press.length === 1 ? " one" : "") + '">' +
+                '<div class="h2h-rv">' + esc(h.rival) + '</div></div>';
+            }).join("") + "</div>" : "";
+        var pressOv = '<div class="veh-overlay press-ov" id="press-ov">' +
+          '<button class="ov-close" id="ov-close-press">&#10005;</button>' +
+          '<div class="ov-eyebrow"><span class="eyebrow">Press Coverage</span><h2 class="ov-h2">What the press say</h2></div>' +
+          '<div class="newsstand">' +
           d.press.map(function (p) {
-            return '<div class="quote"><div class="q">"' + esc(p.quote) + '"</div><div class="s">' + esc(p.src) + "</div></div>";
-          }).join("") + "</div></div></div>";
-        return '<section class="slide active"><div class="scroll">' + inner + "</div>" + chrome(s, idx) + "</section>";
+            return '<div class="newspaper"><div class="paper-flag">' + esc(p.src) + '</div>' +
+              '<div class="paper-body">&ldquo;' + esc(p.quote) + '&rdquo;</div></div>';
+          }).join("") + "</div></div>";
+        var vsOv = d.headToHead && d.headToHead.length
+          ? '<div class="veh-overlay vs-ov" id="vs-ov">' +
+            '<button class="ov-close" id="ov-close-vs">&#10005;</button>' +
+            '<div class="ov-eyebrow"><span class="eyebrow">Head to Head</span><h2 class="ov-h2">Vauxhall vs Rivals</h2></div>' +
+            '<div class="vs-arena">' +
+            '<div class="vs-side">' +
+            '<div class="vs-img-wrap"><img src="assets/vs/' + esc(d.image) + '.png" ' +
+            'onerror="this.parentNode.classList.add(\'vs-ph\')"></div>' +
+            '<div class="vs-car-label">Vauxhall ' + esc(d.name) + '</div></div>' +
+            '<div class="vs-mid">' + h2hRows + '</div>' +
+            '<div class="vs-side vs-side-r">' +
+            '<div class="vs-img-wrap vs-rival-wrap"><img src="assets/vs/' + esc(d.image) + '-rival.png" ' +
+            'onerror="this.parentNode.classList.add(\'vs-ph\')"></div>' +
+            '<div class="vs-car-label vs-rival-label">Rival</div></div>' +
+            "</div></div>" : "";
+        inner = '<div class="veh-head"><div>' +
+          '<div class="eyebrow">Car · ' + esc(d.tagline) + '</div>' +
+          '<h2 class="title">' + esc(d.name) + '</h2></div></div>' +
+          (d.pitch ? '<p class="pitch-sm">' + esc(d.pitch) + '</p>' : '') +
+          heroHTML(d.name, d.image, d.hotspots) +
+          statsHTML(d.stats) +
+          '<div class="veh-actions">' +
+          (d.funFact ? '<div class="funbox-sm"><b>Fun fact:</b> ' + esc(d.funFact) + '</div>' : '') +
+          '<div class="veh-btns">' +
+          '<button class="veh-btn btn-press" id="btn-press">&#128240; Press Quotes</button>' +
+          (d.headToHead && d.headToHead.length ? '<button class="veh-btn btn-vs" id="btn-vs">&#9889; vs Rivals</button>' : '') +
+          '</div></div>' +
+          pressOv + vsOv;
+        return '<section class="slide veh-car-slide active">' + inner + chrome(s, idx) + '</section>';
 
       case "retired":
         inner = '<div class="veh-head"><div>' +
@@ -274,7 +314,7 @@
     if (s.type === "quiz") wireQuiz(sectionEl, s);
     if (s.type === "results") renderResults(sectionEl, idx);
     if (s.type === "timeline") wireTimeline(sectionEl);
-    if (s.type === "vehicle") wireHotspots(sectionEl);
+    if (s.type === "vehicle") wireVehicle(sectionEl);
 
     // nav button state
     elPrev.disabled = idx === 0;
@@ -330,72 +370,70 @@
     if (pill) { pill.className = "status-pill done"; pill.textContent = "Status: Completed ✓"; }
   }
 
-  /* ---- timeline wiring ---- */
+  /* ---- timeline wiring (grid + fullscreen detail) ---- */
   function wireTimeline(el) {
-    var scroll = el.querySelector("#tl-scroll");
-    var prev = el.querySelector("#tl-prev");
-    var next = el.querySelector("#tl-next");
-    if (!scroll) return;
-    var step = 380;
+    var detail = el.querySelector("#tl-detail");
+    var bg     = el.querySelector("#tl-det-bg");
+    var yearEl = el.querySelector("#tl-det-year");
+    var textEl = el.querySelector("#tl-det-text");
+    var factEl = el.querySelector("#tl-det-fact");
+    var closeB = el.querySelector("#tl-det-close");
+    var prevB  = el.querySelector("#tl-det-prev");
+    var nextB  = el.querySelector("#tl-det-next");
+    var activeTl = 0;
 
-    function updateArrows() {
-      prev.disabled = scroll.scrollLeft <= 0;
-      next.disabled = scroll.scrollLeft >= scroll.scrollWidth - scroll.clientWidth - 2;
+    function showEntry(i) {
+      var t = C.timeline[i];
+      activeTl = i;
+      bg.style.backgroundImage = "url(assets/timeline/" + t.year + ".jpg)";
+      yearEl.textContent = t.year + (t.title ? "  " + t.title : "");
+      textEl.textContent = t.text;
+      factEl.textContent = t.fact || "";
+      factEl.style.display = t.fact ? "block" : "none";
+      prevB.disabled = i === 0;
+      nextB.disabled = i === C.timeline.length - 1;
+      detail.classList.add("open");
     }
-    prev.addEventListener("click", function () { scroll.scrollBy({ left: -step, behavior: "smooth" }); });
-    next.addEventListener("click", function () { scroll.scrollBy({ left: step, behavior: "smooth" }); });
-    scroll.addEventListener("scroll", updateArrows);
 
-    // horizontal scroll via mouse wheel
-    scroll.addEventListener("wheel", function (e) {
-      if (Math.abs(e.deltaX) > 0) return;
-      e.preventDefault();
-      scroll.scrollLeft += e.deltaY * 1.5;
-    }, { passive: false });
-
-    // drag to scroll
-    var dragging = false, startX, startLeft;
-    scroll.addEventListener("mousedown", function (e) {
-      dragging = true; startX = e.clientX; startLeft = scroll.scrollLeft;
-      scroll.classList.add("dragging"); e.preventDefault();
+    el.querySelectorAll(".tl-tile").forEach(function (tile) {
+      tile.addEventListener("click", function () {
+        showEntry(parseInt(tile.getAttribute("data-tl"), 10));
+      });
     });
-    window.addEventListener("mousemove", function (e) {
-      if (!dragging) return;
-      scroll.scrollLeft = startLeft - (e.clientX - startX);
-    });
-    window.addEventListener("mouseup", function () {
-      dragging = false; scroll.classList.remove("dragging");
-    });
-
-    // animate items in on scroll
-    var items = el.querySelectorAll(".tl-h-item");
-    if (window.IntersectionObserver) {
-      var io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (e) {
-          if (e.isIntersecting) { e.target.classList.add("tl-visible"); io.unobserve(e.target); }
-        });
-      }, { root: scroll, threshold: 0.2 });
-      items.forEach(function (item) { io.observe(item); });
-    } else {
-      items.forEach(function (item) { item.classList.add("tl-visible"); });
-    }
-    updateArrows();
+    closeB.addEventListener("click", function () { detail.classList.remove("open"); });
+    prevB.addEventListener("click", function () { if (activeTl > 0) showEntry(activeTl - 1); });
+    nextB.addEventListener("click", function () { if (activeTl < C.timeline.length - 1) showEntry(activeTl + 1); });
   }
 
-  /* ---- hotspot wiring ---- */
-  function wireHotspots(el) {
+  /* ---- vehicle wiring (hotspots + overlays) ---- */
+  function wireVehicle(el) {
+    // hotspot dots
     var dots = el.querySelectorAll(".hs-dot");
     dots.forEach(function (dot) {
       dot.addEventListener("click", function (e) {
         e.stopPropagation();
-        var isOpen = dot.classList.contains("open");
+        var open = dot.classList.contains("open");
         dots.forEach(function (d) { d.classList.remove("open"); });
-        if (!isOpen) dot.classList.add("open");
+        if (!open) dot.classList.add("open");
       });
     });
     el.addEventListener("click", function () {
       dots.forEach(function (d) { d.classList.remove("open"); });
     });
+    // press overlay
+    var btnPress = el.querySelector("#btn-press");
+    var pressOv  = el.querySelector("#press-ov");
+    if (btnPress && pressOv) {
+      btnPress.addEventListener("click", function (e) { e.stopPropagation(); pressOv.classList.add("open"); });
+      el.querySelector("#ov-close-press").addEventListener("click", function (e) { e.stopPropagation(); pressOv.classList.remove("open"); });
+    }
+    // vs overlay
+    var btnVs = el.querySelector("#btn-vs");
+    var vsOv  = el.querySelector("#vs-ov");
+    if (btnVs && vsOv) {
+      btnVs.addEventListener("click", function (e) { e.stopPropagation(); vsOv.classList.add("open"); });
+      el.querySelector("#ov-close-vs").addEventListener("click", function (e) { e.stopPropagation(); vsOv.classList.remove("open"); });
+    }
   }
 
   /* ---- responsive scaling ---- */

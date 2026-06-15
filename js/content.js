@@ -66,9 +66,18 @@ window.COURSE = {
         { label: "Standard Kit", vauxhall: "LED lights, lane keep, rear sensors included", rival: "Rivals charge extra for the same level" }
       ],
       hotspots: [
-        { x: 16, y: 48, label: "Full LED Headlights", detail: "Standard on all 2026 Corsa trims, including the entry-level petrol." },
-        { x: 52, y: 78, label: "51kWh Battery", detail: "Long Range battery gives up to 266 miles WLTP on a single charge." },
-        { x: 84, y: 36, label: "V2L Socket", detail: "Vehicle-to-Load: power appliances up to 3.7kW directly from the car. New for 2026." }
+        { x: 16, y: 48, label: "Powertrain & Range", facts: [
+          "Available as Petrol (75–130PS), 48V Mild Hybrid, and Full Electric",
+          "Corsa Electric Long Range: up to 266 miles WLTP from 51kWh battery"
+        ]},
+        { x: 52, y: 78, label: "Tech & Space", facts: [
+          "V2L: power your devices directly from the car (new for 2026)",
+          "Boot: 309 litres (petrol/hybrid) | 267 litres (electric)"
+        ]},
+        { x: 84, y: 36, label: "Safety & Price", facts: [
+          "5-star Euro NCAP safety rating",
+          "Prices from £19,725 (petrol) | £22,075 (hybrid) | £27,505 (electric)"
+        ]}
       ],
       funFact: "The Corsa nameplate launched in 1993, replacing the Nova. More than 1.5 million Corsas have been sold in the UK alone, making it one of the best-selling cars in British motoring history.",
       press: [
@@ -94,9 +103,19 @@ window.COURSE = {
         { label: "0 to 62mph", vauxhall: "134PS Hybrid: 9.0 seconds", rival: "Quicker than most rivals expect from a budget SUV" }
       ],
       hotspots: [
-        { x: 15, y: 50, label: "LED Daytime Lights", detail: "Full LED daytime running lights standard. A 10-inch touchscreen sits inside." },
-        { x: 52, y: 74, label: "7-Seat Layout", detail: "The Hybrid version offers an optional third row for up to 7 passengers." },
-        { x: 83, y: 40, label: "54kWh Battery", detail: "Extended Range model: up to 253 miles WLTP on the larger battery pack." }
+        { x: 15, y: 50, label: "EV Range Options", facts: [
+          "Standard Range Electric: up to 189 miles from 44kWh battery",
+          "Extended Range Electric: up to 253 miles from 54kWh battery"
+        ]},
+        { x: 52, y: 74, label: "Seating & Space", facts: [
+          "Hybrid version available with optional 7-seat third row",
+          "5-seat (Electric & Hybrid) or 7-seat (Hybrid only)"
+        ]},
+        { x: 83, y: 40, label: "Powertrain & Price", facts: [
+          "Available as 48V Mild Hybrid (99 or 134PS) or Full Electric (113PS)",
+          "Prices from £22,495 (Electric) | £24,855 (Hybrid)",
+          "Standard kit: LED lights, rear sensors, 10-inch touchscreen"
+        ]}
       ],
       funFact: "The original Frontera was built from 1991 to 2004 as a proper 4x4 off-roader. The new 2024 Frontera shares only its name, bringing modern EV tech and a much lower price to a whole new generation.",
       press: [
@@ -122,9 +141,19 @@ window.COURSE = {
         { label: "Design Language", vauxhall: "Vizor: award-winning integrated front", rival: "Conventional grille on all rivals" }
       ],
       hotspots: [
-        { x: 20, y: 44, label: "The Vizor", detail: "Integrated LED matrix headlights, daytime running lights, and badge in one striking module. Multiple design awards won." },
-        { x: 55, y: 68, label: "GSE Powertrain", detail: "281PS electric motor. 0 to 62mph in 5.9 seconds. The most powerful Mokka ever made." },
-        { x: 82, y: 40, label: "100kW Rapid Charging", detail: "0 to 80% in just 30 minutes on a compatible rapid charger." }
+        { x: 20, y: 44, label: "The Vizor Front", facts: [
+          "Integrated LED matrix headlights, DRLs and badge in one module",
+          "Award-winning design, now used across the whole Vauxhall range"
+        ]},
+        { x: 55, y: 68, label: "Performance", facts: [
+          "Mokka GSE: 281PS, 0 to 62mph in 5.9 seconds. Most powerful Mokka ever",
+          "100kW rapid charging: 0 to 80% in 30 minutes"
+        ]},
+        { x: 82, y: 40, label: "Powertrain & Price", facts: [
+          "Available as Hybrid (134PS) or Electric (154PS or 281PS GSE)",
+          "Mokka Electric: up to 250 miles WLTP from 54kWh battery",
+          "Prices from approx. £25,000 (Hybrid) | £31,680 (Electric)"
+        ]}
       ],
       funFact: "Mokka is the German word for mocha coffee, fitting for a car that gives you a bit of a kick. The Vizor front design, introduced on the 2021 Mokka, won multiple design awards and is now used across the whole Vauxhall range.",
       press: [
@@ -150,9 +179,18 @@ window.COURSE = {
         { label: "PHEV Range", vauxhall: "52 miles EV-only (covers most daily commutes)", rival: "Most rivals remain under 40 miles EV-only" }
       ],
       hotspots: [
-        { x: 22, y: 42, label: "LED Matrix Headlights", detail: "LED matrix headlights standard on Ultimate trim, with pixel-level beam control." },
-        { x: 50, y: 76, label: "55.4kWh Battery", detail: "New NMC cell chemistry for 2026 delivers 281 miles WLTP. More range, lighter pack." },
-        { x: 79, y: 36, label: "Twin 10-inch Screens", detail: "Digital instrument cluster and infotainment touchscreen both standard on all variants." }
+        { x: 22, y: 42, label: "Electric Range", facts: [
+          "Astra Electric 2026: up to 281 miles WLTP from new 55.4kWh NMC battery",
+          "New: Vehicle-to-Load (V2L) and three-level regen braking paddles"
+        ]},
+        { x: 50, y: 76, label: "PHEV & Hybrid", facts: [
+          "PHEV: 196PS, up to 52 miles electric-only range, 125mpg official",
+          "48V Hybrid: 145PS for everyday efficiency"
+        ]},
+        { x: 79, y: 36, label: "Tech & Price", facts: [
+          "Dual 10-inch digital screens standard across the range",
+          "Prices from £29,995"
+        ]}
       ],
       funFact: "The Astra name has spanned eight generations since 1979. The current Astra Electric shares its platform with the Peugeot e-308 and Citroen e-C4, but Vauxhall's version consistently earns the best reviews of the trio.",
       press: [
@@ -180,9 +218,20 @@ window.COURSE = {
         { label: "AWD Performance", vauxhall: "320PS AWD at competitive pricing", rival: "Undercuts Peugeot e-3008 and BMW iX1 on value" }
       ],
       hotspots: [
-        { x: 18, y: 44, label: "IntelliLux HD Lights", detail: "Pixel Matrix LED headlights with 50,000 individually controlled segments on GS line and above." },
-        { x: 52, y: 72, label: "97kWh Long Range", detail: "Up to 435 miles WLTP. London to Edinburgh and back on one charge, with miles to spare." },
-        { x: 82, y: 36, label: "550-litre Boot", detail: "One of the largest boots in the electric SUV class. More than a VW ID.4 or Peugeot e-3008." }
+        { x: 18, y: 44, label: "Range & Charging", facts: [
+          "Standard Electric (73kWh): up to 323 miles WLTP",
+          "Long Range (97kWh): up to 435 miles WLTP",
+          "160kW rapid charging: 20 to 80% in just 26 minutes"
+        ]},
+        { x: 52, y: 72, label: "Performance & Tech", facts: [
+          "AWD version: 320PS, 0 to 62mph in 6.1 seconds",
+          "IntelliLux Pixel Matrix HD headlights on GS and above",
+          "16-inch infotainment + wireless charging on GS and Ultimate"
+        ]},
+        { x: 82, y: 36, label: "Practicality & Price", facts: [
+          "Boot: 550 litres (electric). One of the best in class",
+          "Prices from £34,700 (Hybrid) | £35,455 (Electric)"
+        ]}
       ],
       funFact: "The 97kWh Long Range Grandland has enough battery to drive from London to Edinburgh and back on one charge, with miles to spare. That is over 800 miles of real-world range on a single fill.",
       press: [

@@ -117,19 +117,40 @@
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch (e) {}
   }
 
+  function localCommentId(item) {
+    return item.local_id || item.created_at_client || "";
+  }
+
+  function supabaseHeaders(extra) {
+    var h = {
+      apikey: CFG.supabaseAnonKey,
+      Authorization: "Bearer " + CFG.supabaseAnonKey
+    };
+    if (extra) {
+      Object.keys(extra).forEach(function (k) { h[k] = extra[k]; });
+    }
+    return h;
+  }
+
+  async function supabaseErrorMessage(res) {
+    try {
+      var body = await res.json();
+      if (body && body.message) return body.message;
+      if (body && body.error) return body.error;
+      if (body && body.hint) return body.hint;
+    } catch (e) {}
+    return "HTTP " + res.status;
+  }
+
   async function fetchSupabaseComments(ctx) {
     var base = String(CFG.supabaseUrl).replace(/\/+$/, "");
     var url = base + "/rest/v1/" + encodeURIComponent(TABLE) +
       "?course_id=eq." + encodeURIComponent(ctx.course_id) +
       "&slide_index=eq." + encodeURIComponent(String(ctx.slide_index)) +
-      "&select=note,reviewer_name,slide_title,created_at_client,section,scene_id,progress&order=created_at_client.desc";
-    var res = await fetch(url, {
-      headers: {
-        apikey: CFG.supabaseAnonKey,
-        Authorization: "Bearer " + CFG.supabaseAnonKey
-      }
-    });
-    if (!res.ok) throw new Error("Supabase fetch failed");
+      "&select=id,note,reviewer_name,slide_title,created_at_client,section,scene_id,progress,inserted_at" +
+      "&order=created_at_client.desc";
+    var res = await fetch(url, { headers: supabaseHeaders() });
+    if (!res.ok) throw new Error(await supabaseErrorMessage(res));
     return await res.json();
   }
 
@@ -138,15 +159,39 @@
     var url = base + "/rest/v1/" + encodeURIComponent(TABLE);
     var res = await fetch(url, {
       method: "POST",
-      headers: {
+      headers: supabaseHeaders({
         "Content-Type": "application/json",
-        Prefer: "return=minimal",
-        apikey: CFG.supabaseAnonKey,
-        Authorization: "Bearer " + CFG.supabaseAnonKey
-      },
+        Prefer: "return=minimal"
+      }),
       body: JSON.stringify(payload)
     });
-    if (!res.ok) throw new Error("Supabase insert failed");
+    if (!res.ok) throw new Error(await supabaseErrorMessage(res));
+  }
+
+  async function updateSupabaseComment(id, payload) {
+    var base = String(CFG.supabaseUrl).replace(/\/+$/, "");
+    var url = base + "/rest/v1/" + encodeURIComponent(TABLE) +
+      "?id=eq." + encodeURIComponent(String(id));
+    var res = await fetch(url, {
+      method: "PATCH",
+      headers: supabaseHeaders({
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      }),
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error(await supabaseErrorMessage(res));
+  }
+
+  async function deleteSupabaseComment(id) {
+    var base = String(CFG.supabaseUrl).replace(/\/+$/, "");
+    var url = base + "/rest/v1/" + encodeURIComponent(TABLE) +
+      "?id=eq." + encodeURIComponent(String(id));
+    var res = await fetch(url, {
+      method: "DELETE",
+      headers: supabaseHeaders({ Prefer: "return=minimal" })
+    });
+    if (!res.ok) throw new Error(await supabaseErrorMessage(res));
   }
 
   function formatDate(iso) {
@@ -179,6 +224,7 @@
       '<input id="rv-name" type="text" maxlength="80" placeholder="So we know who left this note">' +
       '<textarea id="rv-text" placeholder="Leave feedback for this exact slide..."></textarea>' +
       '<div class="rv-actions">' +
+        '<button id="rv-cancel-edit" class="btn btn-outline rv-cancel hidden" type="button">Cancel</button>' +
         '<button id="rv-save" class="btn btn-primary" type="button">Save note</button>' +
       "</div>" +
       '<div class="rv-status" id="rv-status"></div>' +
@@ -187,6 +233,7 @@
     document.body.appendChild(panel);
 
     var saveBtn = panel.querySelector("#rv-save");
+    var cancelEditBtn = panel.querySelector("#rv-cancel-edit");
     var closeBtn = panel.querySelector("#rv-close");
     var textEl = panel.querySelector("#rv-text");
     var nameEl = panel.querySelector("#rv-name");
@@ -194,6 +241,9 @@
     var listEl = panel.querySelector("#rv-list");
     var metaEl = panel.querySelector("#rv-meta");
     var sceneEl = panel.querySelector("#rv-scene");
+    var editingRef = null;
+    var lastItems = [];
+    var lastSource = "local";
 
     try {
       var savedName = localStorage.getItem(NAME_KEY);
@@ -209,11 +259,53 @@
       statusEl.className = "rv-status" + (kind ? " " + kind : "");
     }
 
+    function clearEditMode() {
+      editingRef = null;
+      textEl.value = "";
+      saveBtn.textContent = "Save note";
+      cancelEditBtn.classList.add("hidden");
+      listEl.querySelectorAll(".rv-item.editing").forEach(function (el) {
+        el.classList.remove("editing");
+      });
+    }
+
+    function startEditMode(item, source) {
+      var id = source === "supabase" ? item.id : localCommentId(item);
+      editingRef = { source: source, id: id };
+      textEl.value = item.note || "";
+      if (item.reviewer_name && !nameEl.value.trim()) nameEl.value = item.reviewer_name;
+      saveBtn.textContent = "Update note";
+      cancelEditBtn.classList.remove("hidden");
+      textEl.focus();
+      listEl.querySelectorAll(".rv-item").forEach(function (el) {
+        el.classList.toggle("editing", el.getAttribute("data-id") === String(id));
+      });
+      setStatus("Editing note. Save or cancel when done.", "warn");
+    }
+
     function renderMeta(ctx) {
       sceneEl.textContent = ctx.slide_title;
       metaEl.textContent = "Slide " + (ctx.slide_index + 1) + " of " +
         ((window.VX_RENDER && window.VX_RENDER.slides && window.VX_RENDER.slides.length) || "?") +
         " · " + (ctx.section || "Section") + " · " + ctx.scene_id;
+    }
+
+    function renderCommentItem(it, source) {
+      var id = source === "supabase" ? it.id : localCommentId(it);
+      var who = it.reviewer_name ? esc(it.reviewer_name) + " · " : "";
+      var when = it.created_at_client || it.inserted_at || "";
+      var editing = editingRef && String(editingRef.id) === String(id);
+      return '<div class="rv-item' + (editing ? " editing" : "") + '" data-id="' + esc(String(id)) + '" data-source="' + source + '">' +
+        '<div class="rv-item-top">' +
+          '<div class="rv-item-meta">' + who + esc(formatDate(when)) + "</div>" +
+          '<div class="rv-item-actions">' +
+            '<button type="button" class="rv-act rv-edit" data-rv-edit>Edit</button>' +
+            '<button type="button" class="rv-act rv-delete" data-rv-delete>Remove</button>' +
+          "</div>" +
+        "</div>" +
+        (it.slide_title ? '<div class="rv-item-scene">' + esc(it.slide_title) + "</div>" : "") +
+        '<div class="rv-item-text">' + esc(it.note || "") + "</div>" +
+      "</div>";
     }
 
     async function loadComments() {
@@ -222,8 +314,10 @@
 
       try {
         var items;
+        var source = "local";
         if (hasSupabase()) {
           items = await fetchSupabaseComments(ctx);
+          source = "supabase";
         } else {
           items = getLocalComments().filter(function (x) {
             return x.course_id === ctx.course_id && x.slide_index === ctx.slide_index;
@@ -231,21 +325,18 @@
             return String(b.created_at_client).localeCompare(String(a.created_at_client));
           });
         }
+        lastItems = items;
+        lastSource = source;
 
         if (!items.length) {
           listEl.innerHTML = '<div class="rv-empty">No notes yet for this slide.</div>';
           return;
         }
         listEl.innerHTML = items.map(function (it) {
-          var who = it.reviewer_name ? esc(it.reviewer_name) + " · " : "";
-          return '<div class="rv-item">' +
-            '<div class="rv-item-meta">' + who + esc(formatDate(it.created_at_client)) + "</div>" +
-            (it.slide_title ? '<div class="rv-item-scene">' + esc(it.slide_title) + "</div>" : "") +
-            '<div class="rv-item-text">' + esc(it.note || "") + "</div>" +
-          "</div>";
+          return renderCommentItem(it, source);
         }).join("");
       } catch (e) {
-        listEl.innerHTML = '<div class="rv-empty">Unable to load Supabase notes. Showing local notes only.</div>';
+        listEl.innerHTML = '<div class="rv-empty">Unable to load notes: ' + esc(e.message || "Supabase error") + "</div>";
       }
     }
 
@@ -254,6 +345,36 @@
       if (!note) { setStatus("Write a note first.", "warn"); return; }
       var ctx = getCurrentContext();
       var reviewerName = getReviewerName(nameEl);
+
+      if (editingRef) {
+        try {
+          if (editingRef.source === "supabase" && hasSupabase()) {
+            await updateSupabaseComment(editingRef.id, {
+              note: note,
+              reviewer_name: reviewerName || null,
+              created_at_client: new Date().toISOString()
+            });
+          } else {
+            var all = getLocalComments();
+            var idx = all.findIndex(function (x) {
+              return localCommentId(x) === editingRef.id;
+            });
+            if (idx >= 0) {
+              all[idx].note = note;
+              all[idx].reviewer_name = reviewerName || null;
+              all[idx].created_at_client = new Date().toISOString();
+              setLocalComments(all);
+            }
+          }
+          clearEditMode();
+          setStatus("Comment updated.", "ok");
+          await loadComments();
+        } catch (e) {
+          setStatus(e.message || "Could not update comment.", "err");
+        }
+        return;
+      }
+
       var payload = {
         course_id: ctx.course_id,
         slide_index: ctx.slide_index,
@@ -271,36 +392,87 @@
       try {
         if (hasSupabase()) {
           await insertSupabaseComment(payload);
-          setStatus("Comment saved.", "ok");
         } else {
-          var all = getLocalComments();
-          all.push(payload);
-          setLocalComments(all);
-          setStatus("Comment saved.", "ok");
+          payload.local_id = "local_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+          var stored = getLocalComments();
+          stored.push(payload);
+          setLocalComments(stored);
         }
         textEl.value = "";
+        setStatus("Comment saved.", "ok");
         await loadComments();
       } catch (e) {
-        setStatus("Could not save to Supabase. Check URL, key, table, and CORS.", "err");
+        setStatus(e.message || "Could not save to Supabase.", "err");
       }
     }
+
+    async function removeComment(itemEl) {
+      var id = itemEl.getAttribute("data-id");
+      var source = itemEl.getAttribute("data-source");
+      if (!id) return;
+      if (!window.confirm("Remove this note?")) return;
+
+      if (editingRef && String(editingRef.id) === String(id)) clearEditMode();
+
+      try {
+        if (source === "supabase" && hasSupabase()) {
+          await deleteSupabaseComment(id);
+        } else {
+          var all = getLocalComments().filter(function (x) {
+            return localCommentId(x) !== id;
+          });
+          setLocalComments(all);
+        }
+        setStatus("Comment removed.", "ok");
+        await loadComments();
+      } catch (e) {
+        setStatus(e.message || "Could not remove comment.", "err");
+      }
+    }
+
+    listEl.addEventListener("click", function (e) {
+      var itemEl = e.target.closest(".rv-item");
+      if (!itemEl) return;
+      var id = itemEl.getAttribute("data-id");
+      var item = lastItems.find(function (x) {
+        var itemId = lastSource === "supabase" ? String(x.id) : String(localCommentId(x));
+        return itemId === String(id);
+      });
+      if (e.target.closest("[data-rv-edit]")) {
+        if (item) startEditMode(item, lastSource);
+        return;
+      }
+      if (e.target.closest("[data-rv-delete]")) {
+        removeComment(itemEl);
+      }
+    });
 
     toggleBtn.addEventListener("click", function () {
       panel.classList.toggle("open");
       if (panel.classList.contains("open")) loadComments();
+      else clearEditMode();
     });
-    closeBtn.addEventListener("click", function () { panel.classList.remove("open"); });
+    closeBtn.addEventListener("click", function () {
+      panel.classList.remove("open");
+      clearEditMode();
+    });
+    cancelEditBtn.addEventListener("click", function () {
+      clearEditMode();
+      setStatus("", "");
+    });
     saveBtn.addEventListener("click", saveComment);
 
     document.addEventListener("click", function (e) {
       if (!panel.classList.contains("open")) return;
       if (panel.contains(e.target) || toggleBtn.contains(e.target)) return;
       panel.classList.remove("open");
+      clearEditMode();
     });
 
     window.VX_REVIEW_PANEL = {
       onNavigate: function () {
         if (!panel.classList.contains("open")) return;
+        clearEditMode();
         loadComments();
       },
       refresh: loadComments

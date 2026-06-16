@@ -4,4 +4,12 @@ node_modules/
 .DS_Store
 Thumbs.db
 
+# Source/design files — keep locally, not in git
+*.psd
+*.tif
+*.tiff
+
+# Generated deploy copy (built via tools/)
+vauxhall-scorm-external-review/
+
 saves/

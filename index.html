@@ -8,9 +8,9 @@
 </head>
 <body>
   <div id="start-gate">
-    <img src="assets/img/roundel-white.png" alt="Vauxhall">
-    <h1>Vauxhall Product &amp; Technology</h1>
-    <p>Employee Learning Guide — 2026</p>
+    <img class="start-gate-logo" src="assets/img/logo-h-white.png" alt="Vauxhall">
+    <img class="start-gate-roundel" src="assets/img/roundel-white.png" alt="">
+    <h1 data-slot="title">Vauxhall Product &amp; Technology</h1>
     <button class="btn btn-primary" id="btn-start">Start Module →</button>
   </div>
 
@@ -23,10 +23,38 @@
     <span id="progress-readout">1 / 1</span>
     <button class="btn btn-primary" id="btn-next">Next →</button>
     <button class="btn btn-success hidden" id="btn-finish">Finish &amp; Mark Complete ✓</button>
+    <button id="veh-progress-btn" title="Course menu">
+      ☰ Menu <span class="cp-count">0/0</span>
+    </button>
   </div>
+
+  <!-- Edit mode button — remove or set editMode:false in content.js before publishing -->
+  <a id="edit-mode-btn" href="author.html" title="Open authoring tool">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg>
+    Edit
+  </a>
 
   <script src="js/scorm-api.js"></script>
   <script src="js/content.js"></script>
   <script src="js/engine.js"></script>
+  <script>
+    window.VX_REVIEW_CONFIG = {
+      supabaseUrl: "https://qgwvcnhznochdwefelbc.supabase.co",
+      supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnd3Zjbmh6bm9jaGR3ZWZlbGJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4ODY2MzQsImV4cCI6MjA4NjQ2MjYzNH0.4bE-LtlpZLH74PcF1gwd69-xRWupPvAxNuai1tr7GbI",
+      table: "course_reviews",
+      courseId: "vauxhall-scorm-2026"
+    };
+  </script>
+  <script src="js/review-panel.js"></script>
+  <script>
+    // Hide edit button when not in edit mode
+    (function () {
+      var btn = document.getElementById("edit-mode-btn");
+      if (btn && !(window.COURSE && window.COURSE.editMode)) btn.style.display = "none";
+    })();
+  </script>
 </body>
 </html>

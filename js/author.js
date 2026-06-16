@@ -52,6 +52,25 @@
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
 
+  function boldKeyInfo(raw) {
+    if (raw == null || raw === "") return "";
+    var s = esc(raw);
+    if (s.indexOf(" | ") >= 0) {
+      return s.split(" | ").map(function (part) {
+        return boldKeyInfo(part.trim());
+      }).join(" | ");
+    }
+    var colonIdx = s.indexOf(":");
+    if (colonIdx > 0 && colonIdx < s.length - 1) {
+      return "<strong>" + s.slice(0, colonIdx + 1) + "</strong>" + s.slice(colonIdx + 1);
+    }
+    var m = s.match(/^(\d[\d.,]*(?:\s*to\s*\d[\d.]*)?(?:\s*(?:PS|kWh|mph|miles|mpg|kg|m³|litres|%|★|star(?:s)?)?(?:\s+WLTP)?)?|\d+-star|Up to \d[\d.,]+[^|]*?)(?=\s|$|,)/i);
+    if (m && m[1].length >= 2 && m[1].length < s.length) {
+      return "<strong>" + m[1] + "</strong>" + s.slice(m[1].length);
+    }
+    return s;
+  }
+
   function uid(p) { return p + "-" + Math.random().toString(36).slice(2, 8); }
 
   /* ---------------- scene helpers ---------------- */
@@ -95,53 +114,57 @@
     var scenes = {};
     var C = window.COURSE || {};
 
+    /* ---- Start gate (splash screen) ---- */
+    scenes["startgate"] = {
+      id: "startgate", kind: "startgate", label: "00 · Start Gate (Splash Screen)",
+      background: "", bgColor: "#0A0A28", over: {}, elements: [], popups: []
+    };
+
+    /* ---- Welcome screens ---- */
     if (C.meta) {
       scenes["cover"] = {
-        id: "cover", kind: "cover", label: "Home — Cover",
+        id: "cover", kind: "cover", label: "01 · Cover",
         background: "", bgColor: "#0A0A28", over: {}, elements: [], popups: []
       };
       scenes["objectives"] = {
-        id: "objectives", kind: "objectives", label: "Home — Objectives",
+        id: "objectives", kind: "objectives", label: "02 · Learning Objectives",
         background: "", bgColor: "#000037", over: {}, elements: [], popups: []
       };
     }
 
+    /* ---- Section dividers ---- */
     var dividers = [
-      { id: "divider-history", num: "01", title: "Vauxhall History", quote: "From a smithy to Britain's favourite brand. Quite a journey." },
-      { id: "divider-cars", num: "02", title: "The 2026 Range: Cars", quote: "Let's meet the cars. Everything you need to know about each model, in plain English." },
-      { id: "divider-vans", num: "03", title: "The 2026 Range: Vans", quote: "Our van range is a cornerstone of British business, and it's going electric too." },
-      { id: "divider-retired", num: "04", title: "Retired Models", quote: "Understanding what came before helps you explain the full Vauxhall story." }
+      { id: "divider-history", num: "01", title: "Vauxhall History",        label: "03 · Divider — History",   quote: "From humble smithy to a symbol on Britain's streets." },
+      { id: "divider-cars",    num: "02", title: "The 2026 Range: Cars",     label: "10 · Divider — Cars",      quote: "Explore the line\u2011up. The key facts on every model." },
+      { id: "divider-vans",    num: "03", title: "The 2026 Range: Vans",     label: "20 · Divider — Vans",      quote: "Our van range is a cornerstone of British business,\nand it's going electric too." },
+      { id: "divider-retired", num: "04", title: "Retired Models",           label: "30 · Divider — Retired",   quote: "Understanding what came before helps you explain the full Vauxhall story." }
     ];
     dividers.forEach(function (d) {
       scenes[d.id] = {
-        id: d.id, kind: "divider", label: "Divider — " + d.title,
+        id: d.id, kind: "divider", label: d.label,
         num: d.num, title: d.title, quote: d.quote,
         background: "", bgColor: "#0A0A28", over: {}, elements: [], popups: []
       };
     });
 
+    /* ---- Timeline entries (one scene per year) ---- */
     if (C.timeline) {
       C.timeline.forEach(function (t) {
         var id = "timeline-" + t.year;
         scenes[id] = {
           id: id, kind: "timeline",
-          label: t.title ? t.year + " — " + t.title : t.year,
-          background: "assets/timeline/" + t.year + ".svg",
-          bgColor: "#0A0A28", over: {}, elements: [],
-          popups: t.fact ? [{
-            id: "popup-" + t.year, template: "info-panel",
-            eyebrow: t.eyebrow || "", title: t.title || t.year,
-            body: t.text || "", fact: t.fact || "", accent: "#EB001E"
-          }] : []
+          label: "04 · " + (t.title ? t.year + " — " + t.title : t.year),
+          background: t.bg || "", bgColor: "#0A0A28", over: {}, elements: [], popups: []
         };
       });
     }
 
+    /* ---- Cars ---- */
     if (C.cars) {
       C.cars.forEach(function (c) {
         var id = "vehicle-" + c.image;
         scenes[id] = {
-          id: id, kind: "car", label: "Car — " + c.name,
+          id: id, kind: "car", label: "11 · Car — " + c.name,
           background: "images/" + c.image + ".jpg", bgColor: "#FFFFFF", over: {},
           elements: (c.hotspots || []).map(function (h, i) {
             return {
@@ -152,26 +175,69 @@
             };
           }),
           popups: c.funFact ? [{
-            id: "popup-fun-" + c.image, template: "card-popup",
+            id: "popup-fun-" + c.image, template: "fun-fact",
             eyebrow: "Did you know?", title: c.name, body: c.funFact, fact: "", accent: "#EB001E"
           }] : []
         };
       });
     }
 
+    /* ---- Vans ---- */
     if (C.vans) {
       C.vans.forEach(function (v) {
         var id = "vehicle-" + v.image;
         scenes[id] = {
-          id: id, kind: "van", label: "Van — " + v.name,
+          id: id, kind: "van", label: "21 · Van — " + v.name,
           background: "images/" + v.image + ".jpg", bgColor: "#FFFFFF", over: {}, elements: [],
           popups: v.funFact ? [{
-            id: "popup-fun-" + v.image, template: "card-popup",
+            id: "popup-fun-" + v.image, template: "fun-fact",
             eyebrow: "Did you know?", title: v.name, body: v.funFact, fact: "", accent: "#EB001E"
           }] : []
         };
       });
     }
+
+    /* ---- Retired models ---- */
+    if (C.retired) {
+      C.retired.forEach(function (r) {
+        var id = "retired-" + r.image;
+        scenes[id] = {
+          id: id, kind: "retired", label: "31 · Retired — " + r.name,
+          background: "images/" + r.image + ".jpg", bgColor: "#FFFFFF", over: {}, elements: [], popups: []
+        };
+      });
+    }
+
+    /* ---- Comparison / cheat sheet ---- */
+    scenes["comparison"] = {
+      id: "comparison", kind: "comparison", label: "40 · Comparison — Cheat Sheet",
+      background: "", bgColor: "#000037", over: {}, elements: [], popups: []
+    };
+
+    /* ---- Quiz ---- */
+    scenes["quizintro"] = {
+      id: "quizintro", kind: "quizintro", label: "50 · Quiz — Introduction",
+      background: "", bgColor: "#000037", over: {}, elements: [], popups: []
+    };
+    if (C.quiz) {
+      C.quiz.forEach(function (q, i) {
+        var id = "quiz-" + i;
+        scenes[id] = {
+          id: id, kind: "quiz", label: "51 · Quiz Q" + (i + 1) + " — " + (q.q || "").slice(0, 40) + (q.q && q.q.length > 40 ? "…" : ""),
+          background: "", bgColor: "#000037", over: {}, elements: [], popups: []
+        };
+      });
+    }
+    scenes["results"] = {
+      id: "results", kind: "results", label: "60 · Quiz — Results",
+      background: "", bgColor: "#000037", over: {}, elements: [], popups: []
+    };
+
+    /* ---- Outro ---- */
+    scenes["outro"] = {
+      id: "outro", kind: "outro", label: "70 · Outro — Finish",
+      background: "", bgColor: "#000037", over: {}, elements: [], popups: []
+    };
 
     return scenes;
   }
@@ -404,7 +470,7 @@
     var tip = "";
     var factsArr = el.facts && el.facts.length ? el.facts : [];
     var tipBody = factsArr.length
-      ? '<ul class="hs-facts">' + factsArr.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>"
+      ? '<ul class="hs-facts">' + factsArr.map(function (f) { return "<li>" + boldKeyInfo(f) + "</li>"; }).join("") + "</ul>"
       : "";
     tip = '<div class="hs-tip" style="font-weight:' + (el.bold ? '700' : '400') + ';font-style:' + (el.italic ? 'italic' : 'normal') + ';text-align:' + (el.align || 'left') + ';line-height:' + (el.lineHeight || 1.3) + ';letter-spacing:' + (el.letterSpacing ? el.letterSpacing + 'em' : 'normal') + ';font-size:' + (el.fontSize ? el.fontSize + 'px' : '') + '"><strong>' + esc(el.text || "Hotspot") + "</strong>" + tipBody + "</div>";
     node.innerHTML = '<span class="hs-num">' + (index + 1) + '</span><span class="hs-ring"></span>' + tip;
@@ -748,6 +814,15 @@
         '<h2>' + esc(p.title) + '</h2><p>' + esc(p.body) + '</p>' +
         (p.fact ? '<p class="fact">Fun fact: ' + esc(p.fact) + '</p>' : '') + '</div>';
     }
+    if (p.template === "fun-fact") {
+      return '<div class="fun-fact-panel tpl-fun-fact">' +
+        '<div class="fun-fact-tag"><span class="fun-star" aria-hidden="true">★</span> Fun Fact</div>' +
+        '<div class="fun-fact-bar">' +
+        '<div class="fun-fact-title">Did you know?</div>' +
+        '<button type="button" class="fun-fact-close pop-close" aria-label="Close">×</button>' +
+        '</div>' +
+        '<div class="fun-fact-body"><p>' + esc(p.body) + '</p></div></div>';
+    }
     return '<button class="pop-close" type="button">✕</button><div class="tpl-card-popup">' +
       '<div class="head" style="background:' + a + '">' +
       (p.eyebrow ? '<div class="ey">' + esc(p.eyebrow) + '</div>' : '') +
@@ -809,86 +884,126 @@
     if (ff && sc.bgColor) ff.style.background = sc.bgColor;
   }
 
-  function renderCarSlide(sc, d, root) {
-    var bg = sc.background || ("images/" + d.image + ".jpg");
-    var dark = false;
-    root.innerHTML =
-      '<section class="slide veh-car-slide author-slide active">' +
-      chromeHTML("Cars") +
-      '<div class="veh-head"><div>' +
-      '<div class="eyebrow ce" data-slot="eyebrow">' + esc(slotText(sc, "eyebrow", "Car · " + d.tagline)) + '</div>' +
-      '<h2 class="title ce" data-slot="title">' + esc(slotText(sc, "title", d.name)) + '</h2></div></div>' +
-      '<p class="pitch-sm ce" data-slot="pitch">' + esc(slotText(sc, "pitch", d.pitch || "")) + '</p>' +
-      '<div class="hero" id="hero-zone">' +
-      '<img class="native-img" data-slot="hero" src="' + bg.replace(/"/g, "") + '" alt="' + esc(d.name) + '" onerror="this.style.opacity=0.15">' +
-      '<div class="hs-layer" id="hero-layer"></div></div>' +
-      statsHTML(sc, d.stats) +
-      vehActionsHTML(sc, d) +
-      overlayLayerHTML() +
-      '</section>';
+  /* ---- Live slide rendering via engine ---- *
+   * All slide types are rendered using VX_RENDER.render() so the author
+   * always shows the identical HTML as the live course.
+   * After rendering we post-process to add the editing hooks (data-slot,
+   * native-img class, hs-layer, overlay layer) the author tool relies on. */
+
+  var AUTHOR_SLOT_MAP = [
+    { sel: ".eyebrow",  slot: "eyebrow" },
+    { sel: "h1.title, h2.title, .title", slot: "title" },
+    { sel: ".pitch-sm", slot: "pitch"   },
+    { sel: ".bignum",   slot: "num"     },
+    { sel: ".quote",    slot: "quote"   },
+    { sel: ".blurb strong", slot: "subtitle" },
+    { sel: ".blurb span",   slot: "blurb"    }
+  ];
+
+  function authorPostProcess(sec, sc) {
+    if (!sec) return;
+    sec.classList.add("author-slide");
+
+    // Tag hero/background images
+    var heroImg = sec.querySelector(".hero img, .ret-hero img");
+    if (heroImg && !heroImg.getAttribute("data-slot")) {
+      heroImg.classList.add("native-img");
+      heroImg.setAttribute("data-slot", "hero");
+    }
+
+    // Ensure a hotspot layer exists inside .hero
+    var heroZone = sec.querySelector(".hero");
+    if (heroZone && !heroZone.querySelector(".hs-layer")) {
+      var hsLayer = document.createElement("div");
+      hsLayer.className = "hs-layer"; hsLayer.id = "hero-layer";
+      heroZone.appendChild(hsLayer);
+    }
+
+    // Tag editable text slots
+    AUTHOR_SLOT_MAP.forEach(function (m) {
+      var node = sec.querySelector(m.sel);
+      if (node && !node.getAttribute("data-slot")) {
+        node.classList.add("ce");
+        node.setAttribute("data-slot", m.slot);
+      }
+    });
+
+    // Apply saved text overrides (sc.over)
+    if (sc && sc.over) {
+      Object.keys(sc.over).forEach(function (slot) {
+        var node = sec.querySelector('[data-slot="' + slot + '"]');
+        if (node && sc.over[slot] != null) node.textContent = sc.over[slot];
+      });
+    }
+
+    // Add overlay layer for custom elements
+    if (!sec.querySelector("#overlay-layer")) {
+      var ov = document.createElement("div");
+      ov.className = "author-overlay"; ov.id = "overlay-layer";
+      sec.appendChild(ov);
+    }
   }
 
-  function renderVanSlide(sc, d, root) {
-    var bg = sc.background || ("images/" + d.image + ".jpg");
-    root.innerHTML =
-      '<section class="slide veh-car-slide author-slide active">' +
-      chromeHTML("Vans") +
-      '<div class="veh-head"><div>' +
-      '<div class="eyebrow ce" data-slot="eyebrow">' + esc(slotText(sc, "eyebrow", "Van · " + d.tagline)) + '</div>' +
-      '<h2 class="title ce" data-slot="title">' + esc(slotText(sc, "title", d.name)) + '</h2></div></div>' +
-      '<div class="hero" id="hero-zone">' +
-      '<img class="native-img" data-slot="hero" src="' + bg.replace(/"/g, "") + '" alt="' + esc(d.name) + '" onerror="this.style.opacity=0.15">' +
-      '<div class="hs-layer" id="hero-layer"></div></div>' +
-      statsHTML(sc, d.stats) +
-      vehActionsHTML(sc, d) +
-      overlayLayerHTML() +
-      '</section>';
+  function renderLiveSlide(sc, root) {
+    var R = window.VX_RENDER;
+
+    /* ---- Start gate (splash screen) ---- */
+    if (sc.kind === "startgate") {
+      var sgOver = sc.over || {};
+      var sgTitle = sgOver.title != null ? sgOver.title : (window.COURSE && window.COURSE.meta ? window.COURSE.meta.title || "Vauxhall Product &amp; Technology" : "Vauxhall Product &amp; Technology");
+      var sgSubtitle = sgOver.subtitle != null ? sgOver.subtitle : (window.COURSE && window.COURSE.meta ? window.COURSE.meta.subtitle || "" : "");
+      root.innerHTML =
+        '<section class="slide active" style="background:#0A0A28;display:flex;flex-direction:column;' +
+        'align-items:center;justify-content:center;gap:18px;text-align:center;height:100%;position:relative">' +
+        '<img src="assets/img/logo-h-white.png" alt="Vauxhall" style="position:absolute;top:18px;right:28px;height:20px;width:auto">' +
+        '<img src="assets/img/roundel-white.png" alt="Vauxhall" style="height:72px;object-fit:contain;filter:drop-shadow(0 0 18px #eb001e66)">' +
+        '<h1 class="ce" data-slot="title" style="color:#fff;font-size:28px;font-weight:700;margin:0;letter-spacing:-0.5px">' + sgTitle + '</h1>' +
+        (sgSubtitle ? '<p class="ce" data-slot="subtitle" style="color:rgba(255,255,255,.6);font-size:14px;margin:0">' + sgSubtitle + '</p>' : '') +
+        '<button class="btn" style="margin-top:12px;background:#EB001E;color:#fff;border:none;padding:12px 32px;border-radius:4px;font-size:16px;cursor:default;pointer-events:none">Start Module &#8594;</button>' +
+        '<div id="overlay-layer" class="overlay-layer"></div>' +
+        '</section>';
+      return;
+    }
+
+    /* ---- Timeline entries (one-entry preview via dedicated builder) ---- */
+    if (sc.kind === "timeline" && sc.id && sc.id.indexOf("timeline-") === 0) {
+      var year = sc.id.slice("timeline-".length);
+      if (R && R.renderTimelineEntry) {
+        var tmp2 = document.createElement("div");
+        tmp2.innerHTML = R.renderTimelineEntry(year);
+        var sec2 = tmp2.firstElementChild;
+        if (sec2) {
+          sec2.classList.add("author-slide");
+          var ol2 = document.createElement("div");
+          ol2.id = "overlay-layer"; ol2.className = "overlay-layer";
+          sec2.appendChild(ol2);
+          root.innerHTML = tmp2.innerHTML;
+          return;
+        }
+      }
+    }
+
+    /* ---- All other slides via engine render ---- */
+    var liveSlide = R && R.slideForId && R.slideForId(sc.id);
+    var liveIdx   = (liveSlide && R.slides) ? R.slides.indexOf(liveSlide) : 0;
+
+    if (liveSlide) {
+      var tmp = document.createElement("div");
+      tmp.innerHTML = R.render(liveSlide, liveIdx);
+      authorPostProcess(tmp.firstElementChild, sc);
+      root.innerHTML = tmp.innerHTML;
+    } else {
+      // Custom/freeform scene (no matching engine slide)
+      var bg = sc.background || "";
+      root.innerHTML =
+        '<div class="author-freeform author-slide">' +
+        '<div class="canvas-bg" id="canvas-bg" style="background-image:' +
+          (bg ? 'url("' + bg.replace(/"/g, "") + '")' : 'none') + '"></div>' +
+        overlayLayerHTML() + '</div>';
+    }
   }
 
-  function renderCoverSlide(sc, root) {
-    var C = window.COURSE || { meta: {} };
-    var m = C.meta || {};
-    root.innerHTML =
-      '<section class="slide ink cover author-slide active">' +
-      chromeHTML("Welcome") +
-      '<div class="eyebrow ce" data-slot="eyebrow">' + esc(slotText(sc, "eyebrow", "eLearning · Retailer Module")) + '</div>' +
-      '<h1 class="title ce" data-slot="title">' + esc(slotText(sc, "title", m.title || "Title")) + '</h1>' +
-      '<div class="blurb"><strong class="ce" data-slot="subtitle">' + esc(slotText(sc, "subtitle", m.subtitle || "")) + '</strong><br>' +
-      '<span class="ce" data-slot="blurb">' + esc(slotText(sc, "blurb", m.blurb || "")) + '</span></div>' +
-      '<div class="chips">' + (m.chips || []).map(function (c, i) {
-        return '<span class="chip' + (i === 1 ? " red" : "") + '">' + esc(c) + "</span>";
-      }).join("") + '</div>' +
-      overlayLayerHTML() +
-      '</section>';
-  }
-
-  function renderObjectivesSlide(sc, root) {
-    var C = window.COURSE || {};
-    var objs = C.objectives || [];
-    root.innerHTML =
-      '<section class="slide dark author-slide active">' +
-      chromeHTML("Welcome") +
-      '<div class="eyebrow ce" data-slot="eyebrow">' + esc(slotText(sc, "eyebrow", "Learning Objectives")) + '</div>' +
-      '<h2 class="title ce" data-slot="title">' + esc(slotText(sc, "title", "By the end of this module…")) + '</h2>' +
-      '<div class="obj-list">' + objs.map(function (o, i) {
-        return '<div class="obj-item"><span class="n">0' + (i + 1) + '</span><span class="t">' + esc(o) + "</span></div>";
-      }).join("") + '</div>' +
-      overlayLayerHTML() +
-      '</section>';
-  }
-
-  function renderDividerSlide(sc, root) {
-    root.innerHTML =
-      '<section class="slide ink divider author-slide active">' +
-      chromeHTML(sc.title || "Section") +
-      '<div class="eyebrow ce" data-slot="eyebrow">' + esc(slotText(sc, "eyebrow", "Section " + (sc.num || "01"))) + '</div>' +
-      '<div class="bignum ce" data-slot="num">' + esc(slotText(sc, "num", sc.num || "01")) + '</div>' +
-      '<h1 class="title ce" data-slot="title">' + esc(slotText(sc, "title", sc.title || "Section title")) + '</h1>' +
-      '<div class="quote ce" data-slot="quote">"' + esc(slotText(sc, "quote", sc.quote || "")) + '"</div>' +
-      overlayLayerHTML() +
-      '</section>';
-  }
-
+  // Keep freeform helper for custom scenes
   function renderFreeformSlide(sc, root) {
     var bg = sc.background || "";
     root.innerHTML =
@@ -919,13 +1034,7 @@
     slideRoot.innerHTML = "";
     closeCanvasPopup();
 
-    var kind = sceneKind(sc);
-    if (kind === "car") renderCarSlide(sc, getVehicleData(sc).data, slideRoot);
-    else if (kind === "van") renderVanSlide(sc, getVehicleData(sc).data, slideRoot);
-    else if (kind === "cover") renderCoverSlide(sc, slideRoot);
-    else if (kind === "objectives") renderObjectivesSlide(sc, slideRoot);
-    else if (kind === "divider") renderDividerSlide(sc, slideRoot);
-    else renderFreeformSlide(sc, slideRoot);
+    renderLiveSlide(sc, slideRoot);
 
     applyBgColor(sc);
     wireNative();
@@ -1957,9 +2066,18 @@
 
   function sceneSortKey(id) {
     var sc = state.scenes[id];
+    /* Use the numeric prefix embedded in the label if present (e.g. "04 · …") */
+    if (sc && sc.label) {
+      var m = sc.label.match(/^(\d+)/);
+      if (m) return String(parseInt(m[1], 10)).padStart(4, "0") + "-" + id;
+    }
     var k = sc ? sceneKind(sc) : "custom";
-    var order = { cover: 0, objectives: 1, divider: 2, timeline: 3, car: 4, van: 5, custom: 6 };
-    return (order[k] != null ? order[k] : 9) + "-" + id;
+    var order = {
+      startgate: 0, cover: 1, objectives: 2, divider: 3, timeline: 4,
+      car: 11, van: 21, retired: 31, comparison: 40,
+      quizintro: 50, quiz: 51, results: 60, outro: 70, custom: 99
+    };
+    return String(order[k] != null ? order[k] : 99).padStart(4, "0") + "-" + id;
   }
 
   function populateScenes() {

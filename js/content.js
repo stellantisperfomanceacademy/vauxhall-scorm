@@ -1,12 +1,16 @@
 /* Vauxhall Product & Technology 2026 — course content */
 window.COURSE = {
+  /* Set editMode: false before publishing to LMS */
+  editMode: false,
+
   meta: {
     title: "Vauxhall Product & Technology",
-    subtitle: "Employee Learning Guide — 2026",
+    subtitle: "",
     blurb:
-      "Everything a Vauxhall employee needs to know: history, the full 2026 range, and what the press are saying right now.",
-    chips: ["45 Minutes", "Quiz Included", "Model Year 2026"],
-    passMark: 0.75
+      "From one of Britain's oldest motoring names to a fully electrified future – get under the skin of every Vauxhall, sharpen your brand story, and turn insight into sales.",
+    chips: ["45 Minutes", "Quiz Included"],
+    passMark: 0.6,
+    passMin: 3
   },
 
   objectives: [
@@ -21,46 +25,299 @@ window.COURSE = {
       year: "1213",
       title: "A name 800 years in the making",
       eyebrow: "Where did the name come from?",
-      text: "In the 13th century, mercenary Sir Falkes de Breauté was granted land south of the Thames. His home became known as \"Fawkes Hall\", which morphed into \"Foxhall\" and eventually \"Vauxhall\".",
-      fact: "The Vauxhall name is over 800 years old. Sir Falkes de Breauté's personal crest — a mythical Griffin — is still the basis for the Vauxhall logo today."
+      layout: "immersive",
+      bg: "images/timeline1/FawkesHill.png",
+      bgSoft: true,
+      bullets: [
+        "In the 13th century, Sir Falkes de Breauté was granted land south of the Thames.",
+        "His home 'Fawkes Hall' became 'Foxhall', then 'Vauxhall' — a name that has lasted over 800 years.",
+        "His personal crest, the mythical Griffin, remains the Vauxhall badge to this day."
+      ],
+      assets: [
+        { src: "images/timeline1/Sir Faulkes de Breaute.png", cls: "tl-im-portrait", anim: "slide-up"  },
+        { src: "images/timeline1/OriginalGriffin.png",        cls: "tl-im-griffin",  anim: "fade-drop" }
+      ]
     },
-    { year: "1857", text: "Alexander Wilson sets up a marine engine factory in Vauxhall, London. He names it after the area and so the story begins." },
+    {
+      year: "1857",
+      title: "The Vauxhall Iron Works",
+      eyebrow: "Where the story really begins",
+      layout: "immersive",
+      riverScene: true,
+      bullets: [
+        "Scottish engineer Alexander Wilson set up the Vauxhall Iron Works on the site of old Fawkes Hall.",
+        "No cars yet — Wilson built pumps and massive marine engines for riverboats like the famous <em>Jabberwock</em>.",
+        "Wilson left in 1894, and the company pivoted to the petrol engine. The rest is history."
+      ],
+      assets: [
+        { src: "images/timeline1/newspaper_Jabberwock.png", cls: "tl-im-newspaper-float-tr", anim: "float-in" }
+      ]
+    },
     {
       year: "1903",
       title: "A719 · Horseless Carriage",
-      text: "Vauxhall builds its very first car: a 5HP two-seater, steered by a tiller rather than a steering wheel, with no reverse gear whatsoever.",
-      fact: "It cost 130 Guineas (around \u00a3136). Adjusted for inflation, that is roughly \u00a317,000 today. Not bad for a car that could not go backwards.",
+      eyebrow: "The very first Vauxhall",
       layout: "immersive",
       bg: "images/timeline2/LondonOLD2.png",
+      text: "Vauxhall builds its very first car: a 5HP two-seater, steered by a tiller rather than a steering wheel, with no reverse gear whatsoever.",
+      fact: "It cost 130 Guineas (around £136). Adjusted for inflation, that is roughly £17,000 today. Not bad for a car that could not go backwards.",
       bullets: [
-        "Utilising their marine petrol engines, Vauxhall produced its very first \u201chorseless carriage\u201d in 1903.",
-        "It was a 5hp two-seater steered by a tiller \u2014 no steering wheel \u2014 and had absolutely no reverse gear."
+        "Using their marine petrol engines, Vauxhall produced its very first 'horseless carriage' in 1903.",
+        "A 5hp two-seater steered by a tiller — no steering wheel, no reverse gear, absolutely no regrets."
       ],
       assets: [
-        { src: "images/timeline2/1903.png",      cls: "tl-im-car",   anim: "slide-up"  },
-        { src: "images/timeline2/Guineas_1.png",  cls: "tl-im-coins", anim: "fade-drop" }
+        { src: "images/timeline2/1903.png",    cls: "tl-im-car",   anim: "slide-up"  },
+        { src: "images/timeline2/guiena2.png", cls: "tl-im-coin2", anim: "coin-roll" },
+        { src: "images/timeline2/guiena1.png", cls: "tl-im-coin1", anim: "coin-roll" }
       ]
     },
-    { year: "1904", text: "Director Percy Kidner drives a new 6HP four-seater in the gruelling London-to-Glasgow reliability trial. Despite being the smallest car there, it lost only 7 out of a possible 1,000 points.", fact: "Top speed: 18 mph. Fuel economy: 37 mpg. Remarkable by any standard, let alone 1904." },
-    { year: "1905", text: "Vauxhall moves to Luton, Bedfordshire. The heart of the brand still beats there today." },
-    { year: "1910", text: 'The legendary "Prince Henry" C-Type launches: a 3-litre, 25HP sports car that put Vauxhall on the map internationally.' },
-    { year: "1925", text: "General Motors acquires Vauxhall. Access to American investment supercharges the business." },
-    { year: "1939", title: "War Effort", text: "Vauxhall's Luton factory switches entirely to wartime production. The plant produced over 250,000 Bedford military trucks and 5,600 Churchill tanks, equipping the British Army from D-Day to VE Day.", fact: "The Churchill tank was designed and put into production in under 12 months. Workers built one every working hour." },
-    { year: "1964", text: "The iconic Vauxhall Viva launches, a rival to the Mini and the Ford Anglia, beloved by a generation of British drivers." },
-    { year: "1979", text: "The Astra arrives. It would go on to become one of the most important cars in British motoring history." },
-    { year: "1983", text: "The Nova launches (renamed Corsa in 1993). A city car that would eventually become the UK's best-selling nameplate." },
-    { year: "2000s", text: "The Vectra, Zafira, and Insignia era. Vauxhall cements itself as a family favourite." },
-    { year: "2017", text: "Vauxhall joins the Stellantis group (formerly PSA). A new chapter of shared technology and electrification begins." },
-    { year: "2020", text: "Vauxhall launches its first fully electric cars: the Corsa-e and Mokka-e. The electric journey starts in earnest." },
-    { year: "2023", text: "The Astra Electric arrives, making the iconic family hatchback available with zero emissions for the first time." },
-    { year: "2024", text: "The all-new Grandland Electric launches, offering up to 325 miles of range. The brand-new Frontera arrives as a spiritual revival of a classic name." },
-    { year: "2026", text: "Vauxhall's most electrified range ever. Every car and van now has an EV or hybrid option. The Griffin flies into the future." }
+    {
+      year: "1904",
+      title: "London to Glasgow",
+      titleRed: true,
+      mapRoute: true,
+      eyebrow: "The reliability trial",
+      layout: "immersive",
+      bg: "images/timeline3/oldmapreliabilitytrail.png",
+      text: "Director Percy Kidner drives a 6HP four-seater in the gruelling London-to-Glasgow reliability trial. The smallest car entered — losing just 7 of 1,000 points.",
+      bullets: [
+        "The London-to-Glasgow reliability trial was the ultimate test of early motoring endurance.",
+        "Vauxhall's 6HP four-seater — the smallest car entered — lost just 7 out of 1,000 points.",
+        "Top speed: 18 mph. Fuel economy: 37 mpg. A genuine triumph for the young brand."
+      ],
+      assets: [
+        { src: "images/timeline3/1904 4 seater -2.jpg", cls: "tl-im-car", anim: "slide-up" }
+      ]
+    },
+    { year: "1905", text: "Vauxhall uproots from London and moves to Luton, Bedfordshire — where the heart of the brand still beats today." },
+    {
+      year: "1910",
+      title: "Prince Henry C-Type",
+      eyebrow: "Born to race",
+      layout: "immersive",
+      bg: "images/timeline4/BritishRaceTrack2_BG.png",
+      text: "The legendary 'Prince Henry' C-Type: a 3-litre, 25HP sports car that dominated hillclimbs and put Vauxhall on the international map.",
+      fact: "The Prince Henry was considered one of the fastest road cars in the world at the time. Vauxhall was no longer just a local brand.",
+      bullets: [
+        "The 'Prince Henry' C-Type: 3-litre, 25HP — one of the fastest road cars in the world in 1910.",
+        "Named after Prince Henry of Prussia's 1910 reliability trial, which it dominated.",
+        "Vauxhall's racing pedigree was born. The brand would never look back."
+      ],
+      assets: [
+        { src: "images/timeline4/princeHenry.jpg", cls: "tl-im-float-photo-bl", anim: "float-in" },
+        { src: "images/timeline4/1923 OHV.jpg",    cls: "tl-im-float-photo-tr", anim: "float-in"  }
+      ]
+    },
+    {
+      year: "1925",
+      title: "General Motors Era",
+      eyebrow: "American investment arrives",
+      layout: "immersive",
+      bgContrast: true,
+      bg: "images/timeline5/GMDEAL_newspaperVauxhall.png",
+      bullets: [
+        "General Motors acquires Vauxhall in 1925 for $2.5 million. American investment changes everything.",
+        "Mass production begins: the affordable 14/40 model puts Vauxhall in every British household.",
+        "The GM deal was controversial — but it gave Vauxhall the capital to build cars ordinary families could actually afford."
+      ],
+      assets: [
+        { src: "images/timeline5/gmLOGO.png",           cls: "tl-im-logo",       anim: "fade-drop" },
+        { src: "images/timeline5/VauxhallLogoOld.png", cls: "tl-im-logo-vx-lg", anim: "fade-drop" }
+      ]
+    },
+    {
+      year: "1931",
+      title: "Mass Market & Bedford",
+      eyebrow: "Cars for everyone",
+      layout: "immersive",
+      bgPan: true,
+      bg: "images/timeline5/1931Mass Market & Bedfords_pano.png",
+      bullets: [
+        "Vauxhall pivoted to affordable cars for everyday families — first British car with a synchromesh gearbox (no more grinding gears!).",
+        "April 1931 saw the birth of the commercial Bedford brand, launching with a two-ton truck.",
+        "An instant success — Bedford went on to spawn decades of iconic buses and vans."
+      ]
+    },
+    {
+      year: "1939",
+      title: "War Effort",
+      eyebrow: "Luton at war · 1939–1945",
+      layout: "immersive",
+      bg: "images/timeline7/War Production_BG.png",
+      text: "Vauxhall's Luton factory switches entirely to wartime production. Over 250,000 Bedford military trucks and 5,600 Churchill tanks — one built every working hour.",
+      fact: "The Churchill tank was designed and put into production in under 12 months. The workforce tripled overnight.",
+      bullets: [
+        "The Luton factory converts entirely to war production from 1939.",
+        "Over 250,000 Bedford military trucks supplied to the Allied forces.",
+        "5,600 Churchill tanks — designed and built in under 12 months. One every working hour."
+      ],
+      assets: [
+        { src: "images/timeline7/ChurchillTankTransparent.png", cls: "tl-im-tank-scroll", anim: "scroll" },
+        { src: "images/timeline7/warproductionline.jpg", cls: "tl-im-float-photo-tl", anim: "float-in" }
+      ]
+    },
+    {
+      year: "1950s",
+      title: "Massive Growth",
+      eyebrow: "Building at scale",
+      layout: "immersive",
+      bg: "images/timeline8/factorylineBG.png",
+      text: "The 1950s brought massive growth. By 1953, output topped 100,000 vehicles a year, and the one-millionth Vauxhall rolled off the line.",
+      bullets: [
+        "The 1950s brought massive growth. By 1953, output topped 100,000 vehicles a year, and the one-millionth Vauxhall rolled off the line.",
+        "Soon after, the Dunstable plant employed 22,000 people and launched the iconic Victor saloon."
+      ],
+      assets: [
+        { src: "images/timeline8/50s car.jpg", cls: "tl-im-viva-bl", anim: "float-in" },
+        { src: "images/timeline7/EllesmerePortfirstVauxhallViva1stJune1964.jpg", cls: "tl-im-float-photo-tr", anim: "float-in" }
+      ]
+    },
+    {
+      year: "1960–70s",
+      title: "From Viva to Astra",
+      eyebrow: "Britain's living rooms",
+      layout: "room-explore",
+      bg: "images/timeline9/70sCarsLivingRoom2.png",
+      driveway: "images/timeline9/70sCarsDriveway2.png",
+      windowHotspot: { x: 16, y: 7, w: 66, h: 60 },
+      drivewayCars: [
+        { label: "Viva",     x: 16, y: 74 },
+        { label: "Cavalier", x: 48, y: 74 },
+        { label: "Astra",    x: 78, y: 74 }
+      ],
+      text: "As car ownership became a reality for most families, Vauxhall sales exploded. Click the window to step outside and see the cars that defined the era.",
+      bullets: [
+        "As car ownership became a reality for most families, Vauxhall sales exploded.",
+        "The compact Viva was a massive hit in the 60s.",
+        "The 1970s brought the beloved Cavalier (1975) and the debut of the Astra (1979) — names that would dominate British roads for decades.",
+        "Click the window to step outside and see Viva, Cavalier, and Astra on every driveway →"
+      ],
+      drivewayBullets: [
+        "Viva, Cavalier, Astra — three generations of Vauxhall on one street.",
+        "From the 60s compact that got Britain moving to the 1979 Astra that became an icon.",
+        "By the 1980s, Vauxhall was Britain's second best-selling brand."
+      ]
+    },
+    {
+      year: "1983",
+      title: "Nova & Ellesmere Port",
+      eyebrow: "The city car era",
+      layout: "immersive",
+      bg: "images/nova/novaad1_BG.jpg",
+      bgContrast: true,
+      bgPan: true,
+      britain1980sScene: true,
+      bullets: [
+        "The Nova launches in 1983 — small, affordable, and perfectly timed for city living.",
+        "Built at Ellesmere Port, it would later be renamed the Corsa in 1993.",
+        "It went on to become the UK's best-selling car nameplate of all time — over 1.5 million sold."
+      ],
+      assets: [
+        { src: "images/nova/novafron1.jpg", cls: "tl-im-nova-front", anim: "float-in" },
+        { src: "images/nova/novaad2.jpg",   cls: "tl-im-float-photo-tr", anim: "float-in" }
+      ]
+    },
+    {
+      year: "2000s",
+      title: "Britain's Family Favourite",
+      layout: "immersive",
+      britain2000sScene: true,
+      carLineup: true,
+      bullets: [
+        "The Vectra dominated company car fleets and family driveways through the 2000s.",
+        "The Zafira brought seven-seat practicality to Britain — the compact MPV everyone wanted.",
+        "The Insignia arrived in 2008 and won European Car of the Year in 2009."
+      ],
+      fact: "Vauxhall was Britain's second best-selling brand for much of this era — only Ford sold more.",
+      assets: [
+        { src: "images/Vectra.webp",                      label: "Vectra",   cls: "tl-im-car-vectra" },
+        { src: "images/vauxhall-zafira-3.jpg",            label: "Zafira",   cls: "tl-im-car-zafira" },
+        { src: "images/vauxhall-insignia-rear-quarter.jpg", label: "Insignia", cls: "tl-im-car-insignia" }
+      ]
+    },
+    {
+      year: "2017",
+      title: "A New Chapter",
+      eyebrow: "Stellantis era",
+      layout: "immersive",
+      stellantisScene: true,
+      stellantisLogo: "images/logos/stell-logo-white.png",
+      floatingLogos: [
+        "images/logos/Vauxhall-Logo-1857-768x483.png",
+        "images/logos/1983.png",
+        "images/logos/Vauxhall-Logo-1989-768x469.png",
+        "images/logos/Vauxhall-Logo-2003-768x473.png",
+        "images/logos/Vauxhall-Logo-2008-768x432.png",
+        "images/logos/Vauxhall-Logo-2009-768x539.png",
+        "images/logos/Vauxhall-Logo-2011-768x483.png",
+        "images/logos/VX_LOGO_V_CMYK.png"
+      ],
+      text: "Vauxhall joins the Stellantis group (formerly PSA). A new chapter of shared platforms, electrification, and global scale begins.",
+      fact: "Through every badge change, the Griffin endures — a symbol of British motoring that has lasted over 800 years.",
+      bullets: [
+        "Vauxhall joins Stellantis in 2017 — unlocking shared EV platforms and global investment.",
+        "The move accelerates electrification: every model now has an EV or hybrid option."
+      ]
+    },
+    {
+      year: "2020",
+      title: "The Electric Journey Begins",
+      layout: "immersive",
+      electric2020Scene: true,
+      carLineup: "dual",
+      bullets: [
+        "In 2020, Vauxhall launches its first fully electric cars: the Corsa-e and Mokka-e.",
+        "Both plug in at home or rapid charge on the road — zero emissions, everyday practicality.",
+        "It marks the start of a new chapter — today every Vauxhall model has an electric option."
+      ],
+      fact: "The Corsa-e became one of the UK's best-selling electric cars in its first year on sale.",
+      assets: [
+        { src: "images/corsa_charging.jpeg", label: "Corsa-e", cls: "tl-im-car-corsa-e" },
+        { src: "images/mokkaCharging.jpg",   label: "Mokka-e", cls: "tl-im-car-mokka-e" }
+      ]
+    },
+    {
+      year: "2023",
+      title: "Astra Electric",
+      layout: "immersive",
+      bg: "images/astraelectricBG.jpg",
+      bgContrast: true,
+      bullets: [
+        "The Astra Electric arrives in 2023 — the iconic family hatchback, now with zero emissions.",
+        "A British favourite since 1979, electrified for the next generation of drivers."
+      ]
+    },
+    {
+      year: "2024",
+      title: "Grandland & Frontera",
+      layout: "immersive",
+      bg: "images/Grandland Electric.jpg",
+      bgContrast: true,
+      panelTop: true,
+      bullets: [
+        "The all-new Grandland Electric launches with up to 435 miles of range.",
+        "The Frontera arrives as a spiritual revival of a classic name."
+      ]
+    },
+    {
+      year: "2026",
+      title: "The Future is Electric",
+      eyebrow: "Vauxhall today",
+      layout: "immersive",
+      bg: "images/timeline10/ellsmerePortBG.png",
+      bullets: [
+        "Vauxhall's most electrified range ever — every car and van available as EV or hybrid. Zero compromises.",
+        "Ellesmere Port becomes the UK's first dedicated all-electric car factory.",
+        "From the Iron Works of 1857 to the electric grid — the Griffin flies into the future."
+      ]
+    }
   ],
 
   /* ---- SECTION 2: CARS ---- */
   cars: [
     {
-      name: "Corsa", image: "corsa",
+      name: "Corsa", image: "corsa", imageSrc: "images/corsa_stretched.png",
+      heroPos: { x: 50, y: 54 },
       tagline: "Britain's Favourite Small Car",
       pitch: "The Corsa has been the UK's best-selling car multiple times. In 2026 it is better than ever, with petrol, mild hybrid, and full electric options.",
       stats: [ {v:"266", l:"EV MILES (WLTP)"}, {v:"309", l:"BOOT LITRES"}, {v:"5★", l:"EURO NCAP"} ],
@@ -98,6 +355,7 @@ window.COURSE = {
     },
     {
       name: "Frontera", image: "frontera",
+      heroPos: { x: 50, y: 58 },
       tagline: "The Affordable SUV Everybody's Talking About",
       pitch: "New for 2024, the Frontera is Vauxhall's entry-level SUV. Already making waves with its unbeatable price point and proper EV credentials.",
       stats: [ {v:"253", l:"EV MILES (EXT)"}, {v:"7", l:"SEATS (HYBRID)"}, {v:"£22,495", l:"FROM"} ],
@@ -136,6 +394,9 @@ window.COURSE = {
     },
     {
       name: "Mokka", image: "mokka",
+      imageSrc: "images/mokka.png",
+      vsImageSrc: "images/mokkatransparent.png",
+      heroPos: { x: 50, y: 52 },
       tagline: "The Bold One",
       pitch: "The Mokka turns heads wherever it goes. That distinctive Vizor front end is unmistakable. The 2026 range now includes the 281PS Mokka GSE for serious performance fans.",
       stats: [ {v:"281", l:"PS (GSE)"}, {v:"5.9", l:"0–62 SEC (GSE)"}, {v:"250", l:"EV MILES"} ],
@@ -174,6 +435,7 @@ window.COURSE = {
     },
     {
       name: "Astra", image: "astra",
+      heroPos: { x: 50, y: 68 },
       tagline: "The Iconic Family Hatch, Electrified",
       pitch: "The Astra has been a British staple since 1979. In 2026 it is available as Petrol, 48V Hybrid, PHEV, or full EV: the most powertrain options it has ever offered.",
       stats: [ {v:"281", l:"EV MILES (WLTP)"}, {v:"125", l:"MPG (PHEV)"}, {v:"52", l:"PHEV EV MILES"} ],
@@ -211,6 +473,7 @@ window.COURSE = {
     },
     {
       name: "Grandland", image: "grandland",
+      heroPos: { x: 50, y: 68 },
       tagline: "The Big SUV with Big Ambitions",
       pitch: "The all-new Grandland launched in 2024 and it means business. Up to 323 miles on the standard electric, and a 97kWh Long Range offering 435 miles. The most capable Vauxhall ever made.",
       stats: [ {v:"435", l:"EV MILES (LR)"}, {v:"26", l:"MIN 20–80%"}, {v:"550", l:"BOOT LITRES"} ],
@@ -256,6 +519,8 @@ window.COURSE = {
   vans: [
     {
       name: "Combo-e Life", image: "combo",
+      imageSrc: "images/combo_long.png",
+      heroPos: { x: 50, y: 58 },
       tagline: "The Electric People Carrier",
       stats: [ {v:"174", l:"EV MILES"}, {v:"7", l:"SEATS"}, {v:"30", l:"MIN 0–80%"} ],
       keyFacts: [
@@ -311,6 +576,7 @@ window.COURSE = {
   retired: [
     {
       name: "Crossland", image: "crossland",
+      imageSrc: "images/crosssland2.png",
       retired: "Retired Spring 2024",
       notice: "The Crossland was discontinued in Spring 2024 and is no longer on sale new. It has been replaced in the Vauxhall line-up by the new Frontera. You may still encounter customers with existing Crosslands on the road.",
       specs: [
@@ -325,6 +591,7 @@ window.COURSE = {
     },
     {
       name: "Insignia", image: "insignia",
+      imageSrc: "images/insignia2.png",
       retired: "Retired 2022",
       notice: "The Insignia was discontinued in 2022 and is no longer sold new. Vauxhall has not directly replaced it in the same D-segment saloon/estate class. Customers looking for a larger family car are typically directed to the Grandland.",
       specs: [
@@ -356,30 +623,20 @@ window.COURSE = {
 
   /* ---- SECTION 6: QUIZ (correct = index) ---- */
   quiz: [
-    { q: "What does the Vauxhall Griffin logo represent?",
-      a: ["The coat of arms of Luton", "The personal crest of Sir Falkes de Breauté", "A mythical Roman war symbol", "The emblem of General Motors"], correct: 1 },
-    { q: "In what year did Vauxhall first produce a car?",
-      a: ["1893", "1899", "1903", "1910"], correct: 2 },
-    { q: "How much did Vauxhall's first car cost, and what couldn't it do?",
-      a: ["£500 and it had no brakes", "130 Guineas (£136.50) and it had no reverse gear", "£1,000 and it had no steering wheel", "It was free as a prototype"], correct: 1 },
-    { q: "What did the Vauxhall factory produce during World War Two?",
-      a: ["Spitfire aircraft", "Ration packs", "Churchill tanks and Bedford military trucks", "Naval submarines"], correct: 2 },
-    { q: "What is the WLTP range of the 2026 Corsa Electric Long Range (51kWh)?",
-      a: ["222 miles", "246 miles", "252 miles", "266 miles"], correct: 3 },
-    { q: "True or False: The 2026 Vauxhall Astra Electric features Vehicle-to-Load (V2L) for the first time.",
+    { q: "Who acquired Vauxhall in 1925?",
+      a: ["Ford", "Stellantis", "Bedford", "General Motors"], correct: 3 },
+    { q: "What did Vauxhall produce at Luton during WWII?",
+      a: ["Spitfire aircraft only", "Churchill tanks and Bedford military trucks", "Naval destroyers", "Railway engines"], correct: 1 },
+    { q: "In 2020, which two fully electric Vauxhalls launched?",
+      a: ["Astra Electric and Grandland Electric", "Corsa-e and Mokka-e", "Frontera Electric and Vivaro Electric", "Combo-e Life and Movano Electric"], correct: 1 },
+    { q: "True or False: Astra Electric 2026 adds Vehicle-to-Load (V2L).",
       a: ["True", "False"], correct: 0 },
-    { q: "Which Vauxhall model is available with a 281PS GSE powertrain in 2026?",
-      a: ["Corsa", "Astra", "Mokka", "Grandland"], correct: 2 },
-    { q: "How long does it take to charge the Grandland Electric from 20 to 80% on a 160kW rapid charger?",
-      a: ["45 minutes", "26 minutes", "35 minutes", "50 minutes"], correct: 1 },
-    { q: "What is the maximum WLTP range of the Grandland Electric Long Range (97kWh)?",
-      a: ["325 miles", "380 miles", "410 miles", "435 miles"], correct: 3 },
-    { q: "In which year did Vauxhall join the Stellantis group?",
-      a: ["2014", "2017", "2020", "2022"], correct: 1 },
-    { q: "True or False: The Vivaro Electric can seat up to 9 people in Vivaro Life configuration.",
-      a: ["True", "False"], correct: 0 },
+    { q: "How long does Grandland Electric take to charge from 20–80% on 160kW rapid charging?",
+      a: ["45 minutes", "35 minutes", "30 minutes", "26 minutes"], correct: 3 },
     { q: "What replaced the discontinued Crossland in the Vauxhall range?",
-      a: ["Mokka", "Frontera", "Combo-e Life", "Nothing — the segment was dropped"], correct: 1 }
+      a: ["Mokka", "Frontera", "Combo-e Life", "Nothing — the segment was dropped"], correct: 1 },
+    { q: "In which year did Vauxhall join the Stellantis group?",
+      a: ["2014", "2017", "2020", "2022"], correct: 1 }
   ],
 
   outro: {

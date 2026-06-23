@@ -11,5 +11,6 @@ Thumbs.db
 
 # Generated deploy copy (built via tools/)
 vauxhall-scorm-external-review/
+images-optimized/
 
 saves/

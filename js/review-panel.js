@@ -64,6 +64,12 @@
     return 0;
   }
 
+  function navigateToSlide(idx) {
+    if (window.VX_RENDER && typeof window.VX_RENDER.go === "function") {
+      window.VX_RENDER.go(idx);
+    }
+  }
+
   function getCurrentContext() {
     var idx = getSlideIndex();
     var slides = window.VX_RENDER && window.VX_RENDER.slides || [];
@@ -126,9 +132,7 @@
       apikey: CFG.supabaseAnonKey,
       Authorization: "Bearer " + CFG.supabaseAnonKey
     };
-    if (extra) {
-      Object.keys(extra).forEach(function (k) { h[k] = extra[k]; });
-    }
+    if (extra) Object.keys(extra).forEach(function (k) { h[k] = extra[k]; });
     return h;
   }
 
@@ -147,8 +151,19 @@
     var url = base + "/rest/v1/" + encodeURIComponent(TABLE) +
       "?course_id=eq." + encodeURIComponent(ctx.course_id) +
       "&slide_index=eq." + encodeURIComponent(String(ctx.slide_index)) +
-      "&select=id,note,reviewer_name,slide_title,created_at_client,section,scene_id,progress,inserted_at" +
+      "&select=id,note,reviewer_name,slide_title,slide_index,created_at_client,section,scene_id,progress,inserted_at" +
       "&order=created_at_client.desc";
+    var res = await fetch(url, { headers: supabaseHeaders() });
+    if (!res.ok) throw new Error(await supabaseErrorMessage(res));
+    return await res.json();
+  }
+
+  async function fetchAllSupabaseComments() {
+    var base = String(CFG.supabaseUrl).replace(/\/+$/, "");
+    var url = base + "/rest/v1/" + encodeURIComponent(TABLE) +
+      "?course_id=eq." + encodeURIComponent(COURSE_ID) +
+      "&select=id,note,reviewer_name,slide_title,slide_index,created_at_client,section,inserted_at" +
+      "&order=slide_index.asc,created_at_client.asc";
     var res = await fetch(url, { headers: supabaseHeaders() });
     if (!res.ok) throw new Error(await supabaseErrorMessage(res));
     return await res.json();
@@ -159,10 +174,7 @@
     var url = base + "/rest/v1/" + encodeURIComponent(TABLE);
     var res = await fetch(url, {
       method: "POST",
-      headers: supabaseHeaders({
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
-      }),
+      headers: supabaseHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error(await supabaseErrorMessage(res));
@@ -170,14 +182,10 @@
 
   async function updateSupabaseComment(id, payload) {
     var base = String(CFG.supabaseUrl).replace(/\/+$/, "");
-    var url = base + "/rest/v1/" + encodeURIComponent(TABLE) +
-      "?id=eq." + encodeURIComponent(String(id));
+    var url = base + "/rest/v1/" + encodeURIComponent(TABLE) + "?id=eq." + encodeURIComponent(String(id));
     var res = await fetch(url, {
       method: "PATCH",
-      headers: supabaseHeaders({
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
-      }),
+      headers: supabaseHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error(await supabaseErrorMessage(res));
@@ -185,8 +193,7 @@
 
   async function deleteSupabaseComment(id) {
     var base = String(CFG.supabaseUrl).replace(/\/+$/, "");
-    var url = base + "/rest/v1/" + encodeURIComponent(TABLE) +
-      "?id=eq." + encodeURIComponent(String(id));
+    var url = base + "/rest/v1/" + encodeURIComponent(TABLE) + "?id=eq." + encodeURIComponent(String(id));
     var res = await fetch(url, {
       method: "DELETE",
       headers: supabaseHeaders({ Prefer: "return=minimal" })
@@ -204,6 +211,7 @@
     var footer = document.getElementById("footer");
     if (!footer) return;
 
+    // Toggle button in footer
     var toggleBtn = document.createElement("button");
     toggleBtn.id = "review-panel-btn";
     toggleBtn.className = "btn btn-outline";
@@ -211,49 +219,86 @@
     toggleBtn.textContent = "Review Notes";
     footer.appendChild(toggleBtn);
 
+    // Panel HTML
     var panel = document.createElement("aside");
     panel.id = "review-panel";
     panel.innerHTML =
       '<div class="rv-head">' +
         '<strong>Reviewer Notes</strong>' +
-        '<button id="rv-close" type="button" aria-label="Close review panel">x</button>' +
-      "</div>" +
-      '<div class="rv-scene" id="rv-scene"></div>' +
-      '<div class="rv-meta" id="rv-meta"></div>' +
-      '<label class="rv-name-label" for="rv-name">Your name</label>' +
-      '<input id="rv-name" type="text" maxlength="80" placeholder="So we know who left this note">' +
-      '<textarea id="rv-text" placeholder="Leave feedback for this exact slide..."></textarea>' +
-      '<div class="rv-actions">' +
-        '<button id="rv-cancel-edit" class="btn btn-outline rv-cancel hidden" type="button">Cancel</button>' +
-        '<button id="rv-save" class="btn btn-primary" type="button">Save note</button>' +
-      "</div>" +
-      '<div class="rv-status" id="rv-status"></div>' +
-      '<div class="rv-list-title">Notes for this slide</div>' +
-      '<div class="rv-list" id="rv-list"></div>';
+        '<button id="rv-close" type="button" aria-label="Close review panel">&#10005;</button>' +
+      '</div>' +
+
+      // Tabs
+      '<div class="rv-tabs">' +
+        '<button class="rv-tab rv-tab-active" data-tab="slide">This slide</button>' +
+        '<button class="rv-tab" data-tab="all">All notes <span class="rv-all-count" id="rv-all-count"></span></button>' +
+      '</div>' +
+
+      // "This slide" pane
+      '<div class="rv-pane" id="rv-pane-slide">' +
+        '<div class="rv-scene" id="rv-scene"></div>' +
+        '<div class="rv-meta" id="rv-meta"></div>' +
+        '<label class="rv-name-label" for="rv-name">Your name</label>' +
+        '<input id="rv-name" type="text" maxlength="80" placeholder="So we know who left this note">' +
+        '<textarea id="rv-text" placeholder="Leave feedback for this exact slide..."></textarea>' +
+        '<div class="rv-actions">' +
+          '<button id="rv-cancel-edit" class="btn btn-outline rv-cancel hidden" type="button">Cancel</button>' +
+          '<button id="rv-save" class="btn btn-primary" type="button">Save note</button>' +
+        '</div>' +
+        '<div class="rv-status" id="rv-status"></div>' +
+        '<div class="rv-list-title">Notes for this slide</div>' +
+        '<div class="rv-list" id="rv-list"></div>' +
+      '</div>' +
+
+      // "All notes" pane
+      '<div class="rv-pane rv-pane-hidden" id="rv-pane-all">' +
+        '<div class="rv-all-status" id="rv-all-status">Loading...</div>' +
+        '<div class="rv-all-list" id="rv-all-list"></div>' +
+      '</div>';
+
     document.body.appendChild(panel);
 
-    var saveBtn = panel.querySelector("#rv-save");
-    var cancelEditBtn = panel.querySelector("#rv-cancel-edit");
-    var closeBtn = panel.querySelector("#rv-close");
-    var textEl = panel.querySelector("#rv-text");
-    var nameEl = panel.querySelector("#rv-name");
-    var statusEl = panel.querySelector("#rv-status");
-    var listEl = panel.querySelector("#rv-list");
-    var metaEl = panel.querySelector("#rv-meta");
-    var sceneEl = panel.querySelector("#rv-scene");
-    var editingRef = null;
-    var lastItems = [];
-    var lastSource = "local";
+    // Refs
+    var saveBtn        = panel.querySelector("#rv-save");
+    var cancelEditBtn  = panel.querySelector("#rv-cancel-edit");
+    var closeBtn       = panel.querySelector("#rv-close");
+    var textEl         = panel.querySelector("#rv-text");
+    var nameEl         = panel.querySelector("#rv-name");
+    var statusEl       = panel.querySelector("#rv-status");
+    var listEl         = panel.querySelector("#rv-list");
+    var metaEl         = panel.querySelector("#rv-meta");
+    var sceneEl        = panel.querySelector("#rv-scene");
+    var paneSlide      = panel.querySelector("#rv-pane-slide");
+    var paneAll        = panel.querySelector("#rv-pane-all");
+    var allList        = panel.querySelector("#rv-all-list");
+    var allStatus      = panel.querySelector("#rv-all-status");
+    var allCount       = panel.querySelector("#rv-all-count");
+    var tabs           = panel.querySelectorAll(".rv-tab");
+
+    var editingRef  = null;
+    var lastItems   = [];
+    var lastSource  = "local";
+    var activeTab   = "slide";
 
     try {
       var savedName = localStorage.getItem(NAME_KEY);
       if (savedName) nameEl.value = savedName;
     } catch (e) {}
 
-    nameEl.addEventListener("change", function () {
-      getReviewerName(nameEl);
+    nameEl.addEventListener("change", function () { getReviewerName(nameEl); });
+
+    // ---- tab switching ----
+    tabs.forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        activeTab = tab.getAttribute("data-tab");
+        tabs.forEach(function (t) { t.classList.toggle("rv-tab-active", t === tab); });
+        paneSlide.classList.toggle("rv-pane-hidden", activeTab !== "slide");
+        paneAll.classList.toggle("rv-pane-hidden", activeTab !== "all");
+        if (activeTab === "all") loadAllComments();
+      });
     });
 
+    // ---- helpers ----
     function setStatus(msg, kind) {
       statusEl.textContent = msg || "";
       statusEl.className = "rv-status" + (kind ? " " + kind : "");
@@ -270,6 +315,12 @@
     }
 
     function startEditMode(item, source) {
+      // Switch to slide tab when editing
+      activeTab = "slide";
+      tabs.forEach(function (t) { t.classList.toggle("rv-tab-active", t.getAttribute("data-tab") === "slide"); });
+      paneSlide.classList.remove("rv-pane-hidden");
+      paneAll.classList.add("rv-pane-hidden");
+
       var id = source === "supabase" ? item.id : localCommentId(item);
       editingRef = { source: source, id: id };
       textEl.value = item.note || "";
@@ -280,14 +331,14 @@
       listEl.querySelectorAll(".rv-item").forEach(function (el) {
         el.classList.toggle("editing", el.getAttribute("data-id") === String(id));
       });
-      setStatus("Editing note. Save or cancel when done.", "warn");
+      setStatus("Editing note — save or cancel when done.", "warn");
     }
 
     function renderMeta(ctx) {
       sceneEl.textContent = ctx.slide_title;
       metaEl.textContent = "Slide " + (ctx.slide_index + 1) + " of " +
         ((window.VX_RENDER && window.VX_RENDER.slides && window.VX_RENDER.slides.length) || "?") +
-        " · " + (ctx.section || "Section") + " · " + ctx.scene_id;
+        " · " + (ctx.section || "Section");
     }
 
     function renderCommentItem(it, source) {
@@ -297,21 +348,21 @@
       var editing = editingRef && String(editingRef.id) === String(id);
       return '<div class="rv-item' + (editing ? " editing" : "") + '" data-id="' + esc(String(id)) + '" data-source="' + source + '">' +
         '<div class="rv-item-top">' +
-          '<div class="rv-item-meta">' + who + esc(formatDate(when)) + "</div>" +
+          '<div class="rv-item-meta">' + who + esc(formatDate(when)) + '</div>' +
           '<div class="rv-item-actions">' +
             '<button type="button" class="rv-act rv-edit" data-rv-edit>Edit</button>' +
             '<button type="button" class="rv-act rv-delete" data-rv-delete>Remove</button>' +
-          "</div>" +
-        "</div>" +
-        (it.slide_title ? '<div class="rv-item-scene">' + esc(it.slide_title) + "</div>" : "") +
-        '<div class="rv-item-text">' + esc(it.note || "") + "</div>" +
-      "</div>";
+          '</div>' +
+        '</div>' +
+        (it.slide_title ? '<div class="rv-item-scene">' + esc(it.slide_title) + '</div>' : '') +
+        '<div class="rv-item-text">' + esc(it.note || "") + '</div>' +
+      '</div>';
     }
 
+    // ---- This Slide tab ----
     async function loadComments() {
       var ctx = getCurrentContext();
       renderMeta(ctx);
-
       try {
         var items;
         var source = "local";
@@ -325,21 +376,100 @@
             return String(b.created_at_client).localeCompare(String(a.created_at_client));
           });
         }
-        lastItems = items;
+        lastItems  = items;
         lastSource = source;
-
         if (!items.length) {
           listEl.innerHTML = '<div class="rv-empty">No notes yet for this slide.</div>';
           return;
         }
-        listEl.innerHTML = items.map(function (it) {
-          return renderCommentItem(it, source);
-        }).join("");
+        listEl.innerHTML = items.map(function (it) { return renderCommentItem(it, source); }).join("");
       } catch (e) {
-        listEl.innerHTML = '<div class="rv-empty">Unable to load notes: ' + esc(e.message || "Supabase error") + "</div>";
+        listEl.innerHTML = '<div class="rv-empty">Unable to load notes: ' + esc(e.message || "error") + '</div>';
       }
     }
 
+    // ---- All Notes tab ----
+    async function loadAllComments() {
+      allStatus.textContent = "Loading…";
+      allList.innerHTML = "";
+      try {
+        var items;
+        if (hasSupabase()) {
+          items = await fetchAllSupabaseComments();
+        } else {
+          items = getLocalComments()
+            .filter(function (x) { return x.course_id === COURSE_ID; })
+            .sort(function (a, b) {
+              if (a.slide_index !== b.slide_index) return a.slide_index - b.slide_index;
+              return String(a.created_at_client).localeCompare(String(b.created_at_client));
+            });
+        }
+
+        // Update badge
+        var total = items.length;
+        allCount.textContent = total ? String(total) : "";
+        allCount.style.display = total ? "" : "none";
+
+        if (!total) {
+          allStatus.textContent = "No notes across the course yet.";
+          return;
+        }
+        allStatus.textContent = "";
+
+        // Group by slide_index
+        var groups = {};
+        var order = [];
+        items.forEach(function (it) {
+          var idx = it.slide_index != null ? it.slide_index : -1;
+          if (!groups[idx]) { groups[idx] = []; order.push(idx); }
+          groups[idx].push(it);
+        });
+
+        var currentIdx = getSlideIndex();
+        var html = "";
+        order.forEach(function (slideIdx) {
+          var grp = groups[slideIdx];
+          var title = grp[0].slide_title || ("Slide " + (parseInt(slideIdx, 10) + 1));
+          var isCurrent = slideIdx === currentIdx;
+          html += '<div class="rv-group">' +
+            '<div class="rv-group-head' + (isCurrent ? " rv-group-current" : "") + '">' +
+              '<span class="rv-group-title">' + esc(title) + '</span>' +
+              '<span class="rv-group-count">' + grp.length + ' note' + (grp.length !== 1 ? 's' : '') + '</span>' +
+              (!isCurrent
+                ? '<button class="rv-go-btn" data-slide-idx="' + slideIdx + '">Go to slide &#8594;</button>'
+                : '<span class="rv-here-pill">You are here</span>') +
+            '</div>' +
+            grp.map(function (it) {
+              var who = it.reviewer_name ? esc(it.reviewer_name) + " · " : "";
+              var when = it.created_at_client || it.inserted_at || "";
+              return '<div class="rv-all-item">' +
+                '<div class="rv-item-meta">' + who + esc(formatDate(when)) + '</div>' +
+                '<div class="rv-item-text">' + esc(it.note || "") + '</div>' +
+              '</div>';
+            }).join("") +
+          '</div>';
+        });
+        allList.innerHTML = html;
+      } catch (e) {
+        allStatus.textContent = "Could not load: " + esc(e.message || "error");
+      }
+    }
+
+    // Navigate from All Notes
+    allList.addEventListener("click", function (e) {
+      var btn = e.target.closest(".rv-go-btn");
+      if (!btn) return;
+      var idx = parseInt(btn.getAttribute("data-slide-idx"), 10);
+      navigateToSlide(idx);
+      // Switch back to slide tab so the notes for that slide are visible
+      activeTab = "slide";
+      tabs.forEach(function (t) { t.classList.toggle("rv-tab-active", t.getAttribute("data-tab") === "slide"); });
+      paneSlide.classList.remove("rv-pane-hidden");
+      paneAll.classList.add("rv-pane-hidden");
+      setTimeout(loadComments, 80);
+    });
+
+    // ---- save / update comment ----
     async function saveComment() {
       var note = (textEl.value || "").trim();
       if (!note) { setStatus("Write a note first.", "warn"); return; }
@@ -356,13 +486,11 @@
             });
           } else {
             var all = getLocalComments();
-            var idx = all.findIndex(function (x) {
-              return localCommentId(x) === editingRef.id;
-            });
-            if (idx >= 0) {
-              all[idx].note = note;
-              all[idx].reviewer_name = reviewerName || null;
-              all[idx].created_at_client = new Date().toISOString();
+            var fi = all.findIndex(function (x) { return localCommentId(x) === editingRef.id; });
+            if (fi >= 0) {
+              all[fi].note = note;
+              all[fi].reviewer_name = reviewerName || null;
+              all[fi].created_at_client = new Date().toISOString();
               setLocalComments(all);
             }
           }
@@ -370,7 +498,7 @@
           setStatus("Comment updated.", "ok");
           await loadComments();
         } catch (e) {
-          setStatus(e.message || "Could not update comment.", "err");
+          setStatus(e.message || "Could not update.", "err");
         }
         return;
       }
@@ -402,34 +530,32 @@
         setStatus("Comment saved.", "ok");
         await loadComments();
       } catch (e) {
-        setStatus(e.message || "Could not save to Supabase.", "err");
+        setStatus(e.message || "Could not save.", "err");
       }
     }
 
+    // ---- remove comment ----
     async function removeComment(itemEl) {
       var id = itemEl.getAttribute("data-id");
       var source = itemEl.getAttribute("data-source");
       if (!id) return;
       if (!window.confirm("Remove this note?")) return;
-
       if (editingRef && String(editingRef.id) === String(id)) clearEditMode();
-
       try {
         if (source === "supabase" && hasSupabase()) {
           await deleteSupabaseComment(id);
         } else {
-          var all = getLocalComments().filter(function (x) {
-            return localCommentId(x) !== id;
-          });
+          var all = getLocalComments().filter(function (x) { return localCommentId(x) !== id; });
           setLocalComments(all);
         }
         setStatus("Comment removed.", "ok");
         await loadComments();
       } catch (e) {
-        setStatus(e.message || "Could not remove comment.", "err");
+        setStatus(e.message || "Could not remove.", "err");
       }
     }
 
+    // ---- list click handler (edit / remove) ----
     listEl.addEventListener("click", function (e) {
       var itemEl = e.target.closest(".rv-item");
       if (!itemEl) return;
@@ -442,15 +568,18 @@
         if (item) startEditMode(item, lastSource);
         return;
       }
-      if (e.target.closest("[data-rv-delete]")) {
-        removeComment(itemEl);
-      }
+      if (e.target.closest("[data-rv-delete]")) removeComment(itemEl);
     });
 
+    // ---- panel open / close ----
     toggleBtn.addEventListener("click", function () {
       panel.classList.toggle("open");
-      if (panel.classList.contains("open")) loadComments();
-      else clearEditMode();
+      if (panel.classList.contains("open")) {
+        loadComments();
+        if (activeTab === "all") loadAllComments();
+      } else {
+        clearEditMode();
+      }
     });
     closeBtn.addEventListener("click", function () {
       panel.classList.remove("open");
@@ -469,11 +598,13 @@
       clearEditMode();
     });
 
+    // ---- expose to engine ----
     window.VX_REVIEW_PANEL = {
       onNavigate: function () {
         if (!panel.classList.contains("open")) return;
         clearEditMode();
         loadComments();
+        if (activeTab === "all") loadAllComments();
       },
       refresh: loadComments
     };

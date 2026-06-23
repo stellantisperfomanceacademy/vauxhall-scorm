@@ -411,6 +411,7 @@
     slides: slides,
     render: render,
     getCurrentIndex: function () { return current; },
+    go: function (idx) { go(idx); },
 
     /* Render a single timeline entry as a standalone preview (no carousel chrome) */
     renderTimelineEntry: function (year) {

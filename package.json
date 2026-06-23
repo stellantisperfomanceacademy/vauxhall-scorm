@@ -7,7 +7,8 @@
     "start": "npx serve . --listen 3000 --no-clipboard",
     "build": "powershell -ExecutionPolicy Bypass -File ./build.ps1",
     "dev": "npm run build && npx serve . --listen 3000 --no-clipboard",
-    "optimize-images": "node tools/optimize-images.mjs"
+    "optimize-images": "node tools/optimize-images.mjs",
+    "apply-optimized": "node tools/apply-optimized.mjs"
   },
   "devDependencies": {
     "sharp": "^0.34.3"

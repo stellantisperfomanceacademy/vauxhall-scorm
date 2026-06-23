@@ -1,0 +1,457 @@
+{
+  "generatedAt": "2026-06-23T10:17:31.127Z",
+  "appliedCount": 50,
+  "skippedCount": 49,
+  "bytesSaved": 44627912,
+  "applied": [
+    {
+      "file": "6aac4d7c-637b-416d-9390-d36993b4e542.png",
+      "before": 188859,
+      "after": 188859
+    },
+    {
+      "file": "astra.jpg",
+      "before": 225530,
+      "after": 225530
+    },
+    {
+      "file": "astraelectric.jpg",
+      "before": 41389,
+      "after": 41389
+    },
+    {
+      "file": "astraelectricBG.jpg",
+      "before": 291185,
+      "after": 291185
+    },
+    {
+      "file": "combo.jpg",
+      "before": 218980,
+      "after": 218980
+    },
+    {
+      "file": "corsa.jpg",
+      "before": 426031,
+      "after": 426031
+    },
+    {
+      "file": "corsa_charging.jpeg",
+      "before": 107788,
+      "after": 107788
+    },
+    {
+      "file": "crossland.jpg",
+      "before": 172424,
+      "after": 172424
+    },
+    {
+      "file": "EllesmerePortfirstVauxhallViva1stJune1964.jpg",
+      "before": 548453,
+      "after": 548453
+    },
+    {
+      "file": "ffdb2697b2ed37ca6d049d7f6b608291-l.jpg.webp",
+      "before": 49872,
+      "after": 49872
+    },
+    {
+      "file": "frontera.JPG",
+      "before": 448477,
+      "after": 448477
+    },
+    {
+      "file": "Grandland Electric.jpg",
+      "before": 203547,
+      "after": 203547
+    },
+    {
+      "file": "grandland.jpg",
+      "before": 395666,
+      "after": 395666
+    },
+    {
+      "file": "grandland2.jpg",
+      "before": 250026,
+      "after": 250026
+    },
+    {
+      "file": "insignia.jpg",
+      "before": 150885,
+      "after": 150885
+    },
+    {
+      "file": "mokka.jpg",
+      "before": 301606,
+      "after": 301606
+    },
+    {
+      "file": "mokkaCharging.jpg",
+      "before": 65153,
+      "after": 65153
+    },
+    {
+      "file": "movano.jpg",
+      "before": 137691,
+      "after": 137691
+    },
+    {
+      "file": "movanobig.jpg",
+      "before": 58518,
+      "after": 58518
+    },
+    {
+      "file": "new-grandland-list-2.avif",
+      "before": 13376,
+      "after": 13376
+    },
+    {
+      "file": "nova/novaad1_BG.jpg",
+      "before": 429983,
+      "after": 429983
+    },
+    {
+      "file": "nova/novaad2.jpg",
+      "before": 286643,
+      "after": 286643
+    },
+    {
+      "file": "nova/novafron1.jpg",
+      "before": 43042,
+      "after": 43042
+    },
+    {
+      "file": "renault-4-e-tech-2025-evolution-quarter-urban-grey.avif",
+      "before": 23970,
+      "after": 23970
+    },
+    {
+      "file": "timeline1/FawkesHill.png",
+      "before": 4309385,
+      "after": 1066499
+    },
+    {
+      "file": "timeline10/ellsmerePortBG.png",
+      "before": 486734,
+      "after": 486734
+    },
+    {
+      "file": "timeline2/LondonOLD2.png",
+      "before": 5397557,
+      "after": 882810
+    },
+    {
+      "file": "timeline3/1904 4 seater -2.jpg",
+      "before": 54647,
+      "after": 54647
+    },
+    {
+      "file": "timeline3/oldmapreliabilitytrail.png",
+      "before": 1089745,
+      "after": 208843
+    },
+    {
+      "file": "timeline4/1923 OHV.jpg",
+      "before": 201167,
+      "after": 201167
+    },
+    {
+      "file": "timeline4/BritishRaceTrack2_BG.png",
+      "before": 5146404,
+      "after": 1069989
+    },
+    {
+      "file": "timeline4/princeHenry.jpg",
+      "before": 166942,
+      "after": 166942
+    },
+    {
+      "file": "timeline5/1931Mass Market & Bedfords_pano.png",
+      "before": 3916999,
+      "after": 674271
+    },
+    {
+      "file": "timeline5/GMDEAL_newspaperVauxhall.png",
+      "before": 5081870,
+      "after": 1057763
+    },
+    {
+      "file": "timeline5/oldcar.jpg",
+      "before": 34029,
+      "after": 34029
+    },
+    {
+      "file": "timeline7/EllesmerePortfirstVauxhallViva1stJune1964.jpg",
+      "before": 548453,
+      "after": 548453
+    },
+    {
+      "file": "timeline7/tank next to vauxhall car.jpg",
+      "before": 322682,
+      "after": 322682
+    },
+    {
+      "file": "timeline7/War Production_BG.png",
+      "before": 8026398,
+      "after": 1685930
+    },
+    {
+      "file": "timeline7/warproductionline.jpg",
+      "before": 300928,
+      "after": 300928
+    },
+    {
+      "file": "timeline8/50s car.jpg",
+      "before": 102743,
+      "after": 102743
+    },
+    {
+      "file": "timeline8/factorylineBG.png",
+      "before": 6701572,
+      "after": 1304634
+    },
+    {
+      "file": "timeline9/70sCarsDriveway2.png",
+      "before": 8073453,
+      "after": 1364654
+    },
+    {
+      "file": "timeline9/70sCarsLivingRoom2.png",
+      "before": 7399819,
+      "after": 1199897
+    },
+    {
+      "file": "vauxhall-insignia-rear-quarter.jpg",
+      "before": 201696,
+      "after": 201696
+    },
+    {
+      "file": "vauxhall-zafira-3.jpg",
+      "before": 177855,
+      "after": 177855
+    },
+    {
+      "file": "VAUXHALL_GRANDLAND_BEV_BASE_B0N6U_DJD02_16x9_960x540.avif",
+      "before": 38410,
+      "after": 38410
+    },
+    {
+      "file": "VAUXHALL_GRANDLAND_BEV_ULTIMATE_B0N6U_DJD02_16x9_960x540.avif",
+      "before": 38706,
+      "after": 38706
+    },
+    {
+      "file": "Vectra.webp",
+      "before": 44264,
+      "after": 44264
+    },
+    {
+      "file": "videos/novaAdvert.mp4",
+      "before": 2839584,
+      "after": 2839584
+    },
+    {
+      "file": "vivaro.jpg",
+      "before": 53695,
+      "after": 53695
+    }
+  ],
+  "skipped": [
+    {
+      "file": "astra-rival.png",
+      "reason": "rival png (keep original)"
+    },
+    {
+      "file": "astra.png",
+      "reason": "png with alpha (keep original)"
+    },
+    {
+      "file": "combo_long.png",
+      "reason": "vehicle hero png (keep original)"
+    },
+    {
+      "file": "corsa-rival.png",
+      "reason": "rival png (keep original)"
+    },
+    {
+      "file": "corsa.png",
+      "reason": "png with alpha (keep original)"
+    },
+    {
+      "file": "corsa_stretched.png",
+      "reason": "vehicle hero png (keep original)"
+    },
+    {
+      "file": "crosssland2.png",
+      "reason": "vehicle hero png (keep original)"
+    },
+    {
+      "file": "frontera-rival.png",
+      "reason": "rival png (keep original)"
+    },
+    {
+      "file": "frontera.png",
+      "reason": "png with alpha (keep original)"
+    },
+    {
+      "file": "grandland-rival.png",
+      "reason": "rival png (keep original)"
+    },
+    {
+      "file": "grandland.png",
+      "reason": "png with alpha (keep original)"
+    },
+    {
+      "file": "insignia2.png",
+      "reason": "vehicle hero png (keep original)"
+    },
+    {
+      "file": "logos/1983.png",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "logos/stell-logo-white.png",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "logos/Vauxhall-Logo-1857-768x483.png",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "logos/Vauxhall-Logo-1989-768x469.jpg",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "logos/Vauxhall-Logo-1989-768x469.png",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "logos/Vauxhall-Logo-2003-768x473.jpg",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "logos/Vauxhall-Logo-2003-768x473.png",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "logos/Vauxhall-Logo-2008-768x432.jpg",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "logos/Vauxhall-Logo-2008-768x432.png",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "logos/Vauxhall-Logo-2009-768x539.jpg",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "logos/Vauxhall-Logo-2009-768x539.png",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "logos/Vauxhall-Logo-2011-768x483.png",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "logos/VX_LOGO_V_CMYK.png",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "mokka-rival.png",
+      "reason": "rival png (keep original)"
+    },
+    {
+      "file": "mokka.png",
+      "reason": "vehicle hero png (keep original)"
+    },
+    {
+      "file": "mokkatransparent.png",
+      "reason": "transparent overlay (keep original)"
+    },
+    {
+      "file": "press/AutoExpressLogo.avif",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "press/carwow-seeklogo.png",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "press/ElectrifyingBlack_new.webp",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "press/Independent-logo.webp",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "press/RAC_Limited_(logo).svg.png",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "press/Sunday-times-logo-2.png",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "press/TopGearLogo.svg.png",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "press/What Van",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "press/WV_Logo.png",
+      "reason": "logo/press overlay (keep original)"
+    },
+    {
+      "file": "timeline1/newspaper_Jabberwock.png",
+      "reason": "png with alpha (keep original)"
+    },
+    {
+      "file": "timeline1/OriginalGriffin.png",
+      "reason": "png with alpha (keep original)"
+    },
+    {
+      "file": "timeline1/Sir Faulkes de Breaute.png",
+      "reason": "png with alpha (keep original)"
+    },
+    {
+      "file": "timeline11/oldLogos.png",
+      "reason": "png with alpha (keep original)"
+    },
+    {
+      "file": "timeline11/oldLogos_dosomethinghereanimateeachone.png",
+      "reason": "png with alpha (keep original)"
+    },
+    {
+      "file": "timeline2/1903.png",
+      "reason": "png with alpha (keep original)"
+    },
+    {
+      "file": "timeline2/guiena1.png",
+      "reason": "png with alpha (keep original)"
+    },
+    {
+      "file": "timeline2/guiena2.png",
+      "reason": "png with alpha (keep original)"
+    },
+    {
+      "file": "timeline5/gmLOGO.png",
+      "reason": "png with alpha (keep original)"
+    },
+    {
+      "file": "timeline5/VauxhallLogoOld.png",
+      "reason": "png with alpha (keep original)"
+    },
+    {
+      "file": "timeline7/ChurchillTankTransparent.png",
+      "reason": "transparent overlay (keep original)"
+    },
+    {
+      "file": "vivaro.png",
+      "reason": "png with alpha (keep original)"
+    }
+  ],
+  "missingOriginal": []
+}

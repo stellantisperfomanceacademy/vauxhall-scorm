@@ -7,14 +7,9 @@ const SRC = path.join(ROOT, "images");
 const OPT = path.join(ROOT, "images-optimized");
 const REPORT = path.join(ROOT, "tools", "apply-optimized-report.json");
 
-// Vehicle hero / cutout PNGs — keep originals for transparency quality
+// Transparent vehicle cutout — keep original quality
 const VEHICLE_HERO_PNGS = new Set([
-  "corsa_stretched.png",
-  "mokka.png",
-  "mokkatransparent.png",
-  "combo_long.png",
-  "crosssland2.png",
-  "insignia2.png"
+  "mokkatransparent.png"
 ]);
 
 // Full-bleed timeline backgrounds — safe to optimize even if PNG has alpha metadata

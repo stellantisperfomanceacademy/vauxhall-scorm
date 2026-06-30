@@ -5,7 +5,7 @@ window.COURSE = {
 
   meta: {
     title: "Vauxhall Product & Technology",
-    subtitle: "",
+    subtitle: "v3.0",
     blurb:
       "From one of Britain's oldest motoring names to a fully electrified future – get under the skin of every Vauxhall, sharpen your brand story, and turn insight into sales.",
     chips: ["30 Minutes", "Quiz Included"],
@@ -617,7 +617,7 @@ window.COURSE = {
       ["Vivaro Electric", "Electric", "217 miles", "£42,055 ex.VAT", '"High safety standards" (What Van?)'],
       ["Movano Electric", "Electric", "263 miles", "£46,795 ex.VAT", '"Cheaper than Ford E-Transit" (Carwow)']
     ],
-    note: "OTR prices effective from 1 July 2026. Astra and Combo-e Life prices unchanged."
+    note: "OTR prices effective from 1 July 2026."
   },
 
   /* ---- SECTION 6: QUIZ (correct = index) ---- */

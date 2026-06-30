@@ -156,7 +156,7 @@
         }).join("") + '</div>';
     }
     return (
-      '<div class="hero' + heroClass + '">' +
+      '<div class="hero' + heroClass + '" data-hero="' + esc(id) + '">' +
       '<img src="' + esc(src) + '" alt="' + esc(name) + '"' + imgStyle + ' ' +
       "onerror=\"this.style.display='none';this.nextElementSibling.style.display='flex';\">" +
       '<div class="vx-img" style="display:none"><span class="lbl">[ image ]<br>' + esc(name) + ' — drop photo here:<br>' + esc(src) + '</span></div>' +
@@ -260,7 +260,7 @@
             '<div class="vs-arena">' +
             '<div class="vs-side">' +
             '<div class="vs-img-wrap' +
-              (d.image === "corsa" ? " vs-img-corsa" : d.image === "astra" ? " vs-img-astra" : "") +
+              (d.image === "corsa" ? " vs-img-corsa" : d.image === "astra" ? " vs-img-astra" : d.image === "mokka" ? " vs-img-mokka" : "") +
               '"><img src="' + esc(vsVxSrc) + '" ' +
             vsVxErr + '></div>' +
             '<div class="vs-car-label">Vauxhall ' + esc(d.name) + '</div></div>' +

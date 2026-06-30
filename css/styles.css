@@ -2765,6 +2765,12 @@ table.cmp td:nth-child(5) { font-style: italic; opacity: .8; }
 .veh-car-slide { overflow: hidden; }
 .veh-car-slide .veh-head { margin-bottom: 4px; }
 .veh-car-slide .hero { height: 192px; margin: 6px 0 10px; position: relative; z-index: 5; overflow: visible; }
+.veh-car-slide .hero.hero-contain.hero-zoom { overflow: hidden; background: var(--vx-grey-2); }
+.veh-car-slide .hero[data-hero="mokka"].hero-contain.hero-zoom img,
+.veh-car-slide .hero[data-hero="astra"].hero-contain.hero-zoom img {
+  object-fit: contain;
+  object-position: center center;
+}
 .veh-car-slide .stats,
 .veh-car-slide .veh-actions { position: relative; z-index: 1; }
 .hs-dot.open { z-index: 25; }
@@ -2991,6 +2997,13 @@ table.cmp td:nth-child(5) { font-style: italic; opacity: .8; }
   max-width: none;
   max-height: none;
 }
+.vs-img-wrap.vs-img-mokka img {
+  width: 128%;
+  height: 128%;
+  max-width: none;
+  max-height: none;
+  transform: translateY(-4px);
+}
 .vs-img-wrap.vs-img-astra img {
   width: 126%;
   height: 126%;
@@ -3030,7 +3043,7 @@ table.cmp td:nth-child(5) { font-style: italic; opacity: .8; }
   font-size: 11px;
 }
 .vs-ov .h2h-head {
-  display: grid; grid-template-columns: 72px minmax(0, 1fr) auto minmax(0, 1fr);
+  display: grid; grid-template-columns: 84px minmax(0, 1fr) auto minmax(0, 1fr);
   background: rgba(255,255,255,.08);
   color: #fff;
   padding: 7px 10px;
@@ -3048,7 +3061,7 @@ table.cmp td:nth-child(5) { font-style: italic; opacity: .8; }
 }
 .vs-ov .h2h-head span:nth-child(4) { grid-column: 4; text-align: center; opacity: 1; }
 .vs-ov .h2h-row {
-  display: grid; grid-template-columns: 72px minmax(0, 1fr) minmax(0, 1fr);
+  display: grid; grid-template-columns: 84px minmax(0, 1fr) minmax(0, 1fr);
   border-top: 1px solid rgba(255,255,255,.18);
   background: transparent;
 }
@@ -3058,6 +3071,11 @@ table.cmp td:nth-child(5) { font-style: italic; opacity: .8; }
   letter-spacing: .08em; font-weight: 900; color: var(--vx-red);
   background: #fff; border-right: 1px solid rgba(255,255,255,.22);
   display: flex; align-items: center;
+  min-width: 0;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
 }
 .vs-ov .h2h-vx {
   padding: 8px 10px; font-size: 11px; font-weight: 700;

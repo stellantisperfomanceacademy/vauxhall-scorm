@@ -8,9 +8,8 @@ window.COURSE = {
     subtitle: "",
     blurb:
       "From one of Britain's oldest motoring names to a fully electrified future – get under the skin of every Vauxhall, sharpen your brand story, and turn insight into sales.",
-    chips: ["45 Minutes", "Quiz Included"],
-    passMark: 0.6,
-    passMin: 3
+    chips: ["30 Minutes", "Quiz Included"],
+    passMark: 0.75
   },
 
   objectives: [
@@ -89,7 +88,7 @@ window.COURSE = {
         { src: "images/timeline3/1904 4 seater -2.jpg", cls: "tl-im-car", anim: "slide-up" }
       ]
     },
-    { year: "1905", text: "Vauxhall uproots from London and moves to Luton, Bedfordshire — where the heart of the brand still beats today." },
+    { year: "1905", text: "Vauxhall uproots from London and moves to Luton, Bedfordshire — home to its factory for 120 years, until the site closed in 2025. Production has since moved to Ellesmere Port." },
     {
       year: "1910",
       title: "Prince Henry C-Type",
@@ -295,7 +294,7 @@ window.COURSE = {
       bgContrast: true,
       panelTop: true,
       bullets: [
-        "The all-new Grandland Electric launches with up to 435 miles of range.",
+        "The all-new Grandland Electric launches with up to 323 miles of range.",
         "The Frontera arrives as a spiritual revival of a classic name."
       ]
     },
@@ -317,7 +316,7 @@ window.COURSE = {
   cars: [
     {
       name: "Corsa", image: "corsa", imageSrc: "images/corsa_stretched.png",
-      heroPos: { x: 50, y: 54 },
+      heroPos: { x: 50, y: 50, fit: "cover" },
       tagline: "Britain's Favourite Small Car",
       pitch: "The Corsa has been the UK's best-selling car multiple times. In 2026 it is better than ever, with petrol, mild hybrid, and full electric options.",
       stats: [ {v:"266", l:"EV MILES (WLTP)"}, {v:"309", l:"BOOT LITRES"}, {v:"5★", l:"EURO NCAP"} ],
@@ -327,7 +326,7 @@ window.COURSE = {
         "Corsa Electric now features Vehicle-to-Load (V2L): power your devices directly from the car",
         "Boot space: 309 litres (petrol/hybrid) or 267 litres (electric)",
         "5-star Euro NCAP safety rating",
-        "Prices from: £19,725 (petrol) | £22,075 (mild hybrid) | £27,505 (electric)"
+        "Prices from: £20,590 (petrol) | £22,940 (mild hybrid) | £27,505 (electric)"
       ],
       headToHead: [
         { label: "EV Range", vauxhall: "Corsa-e: 266 miles WLTP", rival: "Ford Puma Gen-E: 259 miles" },
@@ -344,7 +343,7 @@ window.COURSE = {
         ]},
         { x: 84, y: 36, label: "Safety & Price", facts: [
           "5-star Euro NCAP safety rating",
-          "Prices from £19,725 (petrol) | £22,075 (hybrid) | £27,505 (electric)"
+          "Prices from £20,590 (petrol) | £22,940 (hybrid) | £27,505 (electric)"
         ]}
       ],
       funFact: "The Corsa nameplate launched in 1993, replacing the Nova. More than 1.5 million Corsas have been sold in the UK alone, making it one of the best-selling cars in British motoring history.",
@@ -358,18 +357,18 @@ window.COURSE = {
       heroPos: { x: 50, y: 58 },
       tagline: "The Affordable SUV Everybody's Talking About",
       pitch: "New for 2024, the Frontera is Vauxhall's entry-level SUV. Already making waves with its unbeatable price point and proper EV credentials.",
-      stats: [ {v:"253", l:"EV MILES (EXT)"}, {v:"7", l:"SEATS (HYBRID)"}, {v:"£22,495", l:"FROM"} ],
+      stats: [ {v:"253", l:"EV MILES (EXT)"}, {v:"7", l:"SEATS (HYBRID)"}, {v:"£24,795", l:"FROM"} ],
       keyFacts: [
-        "Available as: 48V Mild Hybrid (99 or 134PS) or Full Electric (113PS)",
+        "Available as: 48V Mild Hybrid (110 or 145PS) or Full Electric (113PS)",
         "Frontera Electric Standard Range: up to 189 miles from 44kWh battery",
         "Frontera Electric Extended Range: up to 253 miles from 54kWh battery",
-        "Prices from: £22,495 (Electric) | £24,855 (Hybrid)",
+        "Prices from: £24,795 (Electric) | £25,220 (Hybrid)",
         "Generous standard kit: LED lights, rear parking sensors, 10-inch touchscreen",
         "Available in 5-seat and (Hybrid only) 7-seat configurations"
       ],
       headToHead: [
-        { label: "Entry Price", vauxhall: "Frontera Electric: £22,495", rival: "Renault 4 E-Tech: £23,445" },
-        { label: "0 to 62mph", vauxhall: "134PS Hybrid: 9.0 seconds", rival: "Quicker than most rivals expect from a budget SUV" }
+        { label: "Entry Price", vauxhall: "Frontera Electric: £24,795", rival: "Renault 4 E-Tech: £23,445" },
+        { label: "0 to 62mph", vauxhall: "145PS Hybrid: 9.0 seconds", rival: "Quicker than most rivals expect from a budget SUV" }
       ],
       hotspots: [
         { x: 15, y: 50, label: "EV Range Options", facts: [
@@ -381,8 +380,8 @@ window.COURSE = {
           "5-seat (Electric & Hybrid) or 7-seat (Hybrid only)"
         ]},
         { x: 83, y: 40, label: "Powertrain & Price", facts: [
-          "Available as 48V Mild Hybrid (99 or 134PS) or Full Electric (113PS)",
-          "Prices from £22,495 (Electric) | £24,855 (Hybrid)",
+          "Available as 48V Mild Hybrid (110 or 145PS) or Full Electric (113PS)",
+          "Prices from £24,795 (Electric) | £25,220 (Hybrid)",
           "Standard kit: LED lights, rear sensors, 10-inch touchscreen"
         ]}
       ],
@@ -394,19 +393,19 @@ window.COURSE = {
     },
     {
       name: "Mokka", image: "mokka",
-      imageSrc: "images/mokka.png",
+      imageSrc: "images/mokka-large.png",
       vsImageSrc: "images/mokkatransparent.png",
-      heroPos: { x: 50, y: 52 },
+      heroPos: { x: 50, y: 50, fit: "cover" },
       tagline: "The Bold One",
       pitch: "The Mokka turns heads wherever it goes. That distinctive Vizor front end is unmistakable. The 2026 range now includes the 281PS Mokka GSE for serious performance fans.",
       stats: [ {v:"281", l:"PS (GSE)"}, {v:"5.9", l:"0–62 SEC (GSE)"}, {v:"250", l:"EV MILES"} ],
       keyFacts: [
-        "Available as: 48V Mild Hybrid (1.2T, 134PS), or Full Electric (154PS, or 281PS GSE)",
+        "Available as: Petrol manual, 48V Mild Hybrid (145PS), or Full Electric (156PS, or 281PS GSE)",
         "Mokka Electric: up to 250 miles WLTP from a 54kWh battery",
         "Mokka GSE: 281PS, 0 to 62mph in 5.9 seconds. The most powerful Mokka ever built",
         "100kW rapid charging: 0 to 80% in 30 minutes",
         "The Vizor front design integrates grille, headlights, and badge into one dramatic module",
-        "Prices from: approx. £25,000 (Hybrid) | £31,680 (Electric)"
+        "Prices from: £26,545 (petrol manual) | approx. £31,680 (Electric)"
       ],
       headToHead: [
         { label: "Digital Cockpit", vauxhall: "Standard across the entire range", rival: "Ford, Renault, VW: optional paid extra" },
@@ -422,28 +421,30 @@ window.COURSE = {
           "100kW rapid charging: 0 to 80% in 30 minutes"
         ]},
         { x: 82, y: 40, label: "Powertrain & Price", facts: [
-          "Available as Hybrid (134PS) or Electric (154PS or 281PS GSE)",
+          "Available as Petrol manual, Hybrid (145PS) or Electric (156PS or 281PS GSE)",
           "Mokka Electric: up to 250 miles WLTP from 54kWh battery",
-          "Prices from approx. £25,000 (Hybrid) | £31,680 (Electric)"
+          "Prices from £26,545 (petrol manual) | £31,680 (Electric)"
         ]}
       ],
       funFact: "Mokka is the German word for mocha coffee, fitting for a car that gives you a bit of a kick. The Vizor front design, introduced on the 2021 Mokka, won multiple design awards and is now used across the whole Vauxhall range.",
       press: [
         { quote: "The small SUV class is a busy sector, but the Vauxhall Mokka has the sharp looks to help it stand out from the crowd. Revisions for 2025 have helped to make the Mokka even easier to live with.", src: "Auto Express, 2025" },
-        { quote: "The regular Mokka Electric gets a 154bhp electric motor mated to a 54kWh battery for up to 250 miles of range. Then there's the range-topping Mokka GSE, the first of a whole new breed of electric performance Vauxhalls.", src: "Top Gear, 2026" }
+        { quote: "The regular Mokka Electric gets a 156bhp electric motor mated to a 54kWh battery for up to 250 miles of range. Then there's the range-topping Mokka GSE, the first of a whole new breed of electric performance Vauxhalls.", src: "Top Gear, 2026" }
       ]
     },
     {
       name: "Astra", image: "astra",
-      heroPos: { x: 50, y: 68 },
+      imageSrc: "images/Astra-Wide.png",
+      vsImageSrc: "images/astra.png",
+      heroPos: { x: 50, y: 50, fit: "cover" },
       tagline: "The Iconic Family Hatch, Electrified",
       pitch: "The Astra has been a British staple since 1979. In 2026 it is available as Petrol, 48V Hybrid, PHEV, or full EV: the most powertrain options it has ever offered.",
-      stats: [ {v:"281", l:"EV MILES (WLTP)"}, {v:"125", l:"MPG (PHEV)"}, {v:"52", l:"PHEV EV MILES"} ],
+      stats: [ {v:"281", l:"EV MILES (WLTP)"}, {v:"123", l:"MPG (PHEV)"}, {v:"52", l:"PHEV EV MILES"} ],
       keyFacts: [
         "Available as: 48V Hybrid (145PS), PHEV (196PS, up to 52 miles electric-only range), or Full Electric (156PS)",
         "Astra Electric 2026: up to 281 miles WLTP from new 55.4kWh NMC battery",
         "New for 2026: Vehicle-to-Load (V2L) on Electric, three-level regen braking via paddles",
-        "Astra PHEV: official 125mpg combined, 52-mile EV range, 7-speed gearbox for 2026",
+        "Astra PHEV: official 123mpg combined, 52-mile EV range, 7-speed gearbox for 2026",
         "Dual 10-inch digital screens standard across the range",
         "Prices from: £29,995"
       ],
@@ -457,7 +458,7 @@ window.COURSE = {
           "New: Vehicle-to-Load (V2L) and three-level regen braking paddles"
         ]},
         { x: 50, y: 76, label: "PHEV & Hybrid", facts: [
-          "PHEV: 196PS, up to 52 miles electric-only range, 125mpg official",
+          "PHEV: 196PS, up to 52 miles electric-only range, 123mpg official",
           "48V Hybrid: 145PS for everyday efficiency"
         ]},
         { x: 79, y: 36, label: "Tech & Price", facts: [
@@ -475,17 +476,16 @@ window.COURSE = {
       name: "Grandland", image: "grandland",
       heroPos: { x: 50, y: 68 },
       tagline: "The Big SUV with Big Ambitions",
-      pitch: "The all-new Grandland launched in 2024 and it means business. Up to 323 miles on the standard electric, and a 97kWh Long Range offering 435 miles. The most capable Vauxhall ever made.",
-      stats: [ {v:"435", l:"EV MILES (LR)"}, {v:"26", l:"MIN 20–80%"}, {v:"550", l:"BOOT LITRES"} ],
+      pitch: "The all-new Grandland launched in 2024 and it means business. Up to 323 miles on the standard electric battery, with rapid charging and AWD performance options. The most capable Vauxhall ever made.",
+      stats: [ {v:"323", l:"EV MILES (WLTP)"}, {v:"26", l:"MIN 20–80%"}, {v:"550", l:"BOOT LITRES"} ],
       keyFacts: [
-        "Available as: 48V Mild Hybrid (134PS) or Full Electric (210PS FWD, 320PS AWD, or Long Range 97kWh)",
+        "Available as: 48V Mild Hybrid (134PS) or Full Electric (210PS FWD or 320PS AWD)",
         "Grandland Electric (73kWh): up to 323 miles WLTP | 160kW rapid charging (20 to 80% in 26 minutes)",
         "Grandland Electric AWD: 320PS, 0 to 62mph in 6.1 seconds, up to 311 miles range",
-        "Long Range (97kWh) version: up to 435 miles WLTP",
-        "3D Vizor front | IntelliLux Pixel Matrix HD headlights on GS and above",
+        "3D Vizor front | IntelliLux Pixel Matrix HD headlights on Ultimate trim",
         "GS and Ultimate: 16-inch infotainment + wireless phone charging",
         "Boot: 550 litres (electric). One of the best in class",
-        "Prices from: £34,700 (Hybrid) | £35,455 (Electric)"
+        "Prices from: £31,995 (Hybrid) | £36,545 (Electric)"
       ],
       headToHead: [
         { label: "Rapid Charging", vauxhall: "160kW (20 to 80% in 26 min)", rival: "VW ID.4: 135kW" },
@@ -494,22 +494,21 @@ window.COURSE = {
       hotspots: [
         { x: 18, y: 44, label: "Range & Charging", facts: [
           "Standard Electric (73kWh): up to 323 miles WLTP",
-          "Long Range (97kWh): up to 435 miles WLTP",
           "160kW rapid charging: 20 to 80% in just 26 minutes"
         ]},
         { x: 52, y: 72, label: "Performance & Tech", facts: [
           "AWD version: 320PS, 0 to 62mph in 6.1 seconds",
-          "IntelliLux Pixel Matrix HD headlights on GS and above",
+          "IntelliLux Pixel Matrix HD headlights on Ultimate trim",
           "16-inch infotainment + wireless charging on GS and Ultimate"
         ]},
         { x: 82, y: 36, label: "Practicality & Price", facts: [
           "Boot: 550 litres (electric). One of the best in class",
-          "Prices from £34,700 (Hybrid) | £35,455 (Electric)"
+          "Prices from £31,995 (Hybrid) | £36,545 (Electric)"
         ]}
       ],
-      funFact: "The 97kWh Long Range Grandland has enough battery to drive from London to Edinburgh and back on one charge, with miles to spare. That is over 800 miles of real-world range on a single fill.",
+      funFact: "The Grandland Electric's 73kWh battery delivers up to 323 miles WLTP — enough for London to Edinburgh on a single charge with range to spare.",
       press: [
-        { quote: "The EV is our preferred choice from behind the wheel because it's more comfortable, and with more than 400 miles of range quoted for the 97kWh battery version, the Grandland Electric is a decent option in the class.", src: "Auto Express, 2026" },
+        { quote: "The Grandland Electric is our preferred choice from behind the wheel — more comfortable, and with up to 323 miles of real-world range, a genuinely capable option in the class.", src: "Auto Express, 2026" },
         { quote: "A vast improvement on the old Grandland it replaces and a rather pleasant family SUV, all told.", src: "The Sunday Times Driving, 2024" }
       ]
     }
@@ -609,16 +608,16 @@ window.COURSE = {
   comparison: {
     headers: ["Model", "Powertrain Options", "Top EV Range", "From Price", "Top Press Quote"],
     rows: [
-      ["Corsa", "Petrol / Hybrid / Electric", "266 miles", "£19,725", '"Poise and precision" (Top Gear)'],
-      ["Frontera", "Hybrid / Electric", "253 miles", "£22,495", '"Ticks all the right boxes" (RAC)'],
-      ["Mokka", "Hybrid / Electric / GSE", "250 miles", "£25,000", '"Sharp looks to stand out" (Auto Express)'],
+      ["Corsa", "Petrol / Hybrid / Electric", "266 miles", "£20,590", '"Poise and precision" (Top Gear)'],
+      ["Frontera", "Hybrid / Electric", "253 miles", "£24,795", '"Ticks all the right boxes" (RAC)'],
+      ["Mokka", "Petrol / Hybrid / Electric / GSE", "250 miles", "£26,545", '"Sharp looks to stand out" (Auto Express)'],
       ["Astra", "Hybrid / PHEV / Electric", "281 miles", "£29,995", '"The best of the lot" (Top Gear)'],
-      ["Grandland", "Hybrid / Electric / AWD / LR", "435 miles*", "£34,700", '"Over 400 miles of range" (Auto Express)'],
+      ["Grandland", "Hybrid / Electric / AWD", "323 miles", "£31,995", '"A vast improvement" (Sunday Times)'],
       ["Combo-e Life", "Electric", "174 miles", "POA", '"Full of surprises" (Carwow)'],
       ["Vivaro Electric", "Electric", "217 miles", "£42,055 ex.VAT", '"High safety standards" (What Van?)'],
       ["Movano Electric", "Electric", "263 miles", "£46,795 ex.VAT", '"Cheaper than Ford E-Transit" (Carwow)']
     ],
-    note: "*Long Range 97kWh version. Standard 73kWh: 323 miles."
+    note: "OTR prices effective from 1 July 2026. Astra and Combo-e Life prices unchanged."
   },
 
   /* ---- SECTION 6: QUIZ (correct = index) ---- */

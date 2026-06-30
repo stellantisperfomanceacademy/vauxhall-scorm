@@ -38,7 +38,7 @@ body {
 #stage-wrap { position: fixed; inset: 0 0 56px 0; display: flex; align-items: center; justify-content: center; background: var(--vx-blue-ink); }
 #stage {
   width: 960px; height: 540px; position: relative;
-  background: var(--vx-white); overflow: hidden;
+  background: var(--vx-blue-ink); overflow: hidden;
   transform-origin: center center;
 }
 

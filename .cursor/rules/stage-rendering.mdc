@@ -1,0 +1,35 @@
+---
+description: Stage scaling and rendering conventions for the SCORM module
+alwaysApply: true
+---
+
+# Stage Rendering
+
+## Background colour
+
+`#stage` must use `background: var(--vx-blue-ink)` — **never white**.
+
+The stage is scaled via `transform: scale(k)` in `scaleStage()`. At fractional scale
+factors, sub-pixel rounding leaves a 1px gap at the slide edges. If `#stage` is white,
+that gap bleeds through as a visible white line on dark (`.ink`/`.dark`) slides.
+
+Individual light slides declare their own `background: var(--vx-white)` on `.slide`,
+so they are unaffected by the dark stage background.
+
+```css
+/* ✅ CORRECT */
+#stage { background: var(--vx-blue-ink); }
+
+/* ❌ WRONG — causes white line on dark slides */
+#stage { background: var(--vx-white); }
+```
+
+## PowerShell git commits
+
+Use semicolons, not `&&`, as statement separators in PowerShell. Pass commit messages
+via a variable:
+
+```powershell
+$msg = "your commit message here"
+git commit -m $msg
+```

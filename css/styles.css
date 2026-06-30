@@ -117,6 +117,16 @@ p { line-height: 1.55; }
 .cover .chrome-logo { left: auto; right: 28px; }
 .cover .roundel { position: absolute; right: -70px; top: 50%; transform: translateY(-50%); height: 460px; opacity: .9; }
 .cover h1.title { max-width: 560px; }
+.cover .cover-version {
+  display: block;
+  margin-top: 12px;
+  font-family: var(--vx-mono);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.4);
+}
 .cover .blurb { font-weight: 300; font-size: 15px; line-height: 1.55; opacity: .85; max-width: 430px; margin-top: 20px; }
 .chips { display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap; }
 .chip { font-family: var(--vx-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700;

@@ -179,7 +179,8 @@
         return '<section class="slide ink cover active">' +
           '<img class="roundel" src="' + img + 'roundel-red.png" alt="">' +
           '<h1 class="title">' + esc(C.meta.title) + "</h1>" +
-          '<div class="blurb">' + (C.meta.subtitle ? '<strong>' + esc(C.meta.subtitle) + "</strong><br>" : "") + esc(C.meta.blurb) + "</div>" +
+          (C.meta.subtitle ? '<div class="cover-version">' + esc(C.meta.subtitle) + "</div>" : "") +
+          '<div class="blurb">' + esc(C.meta.blurb) + "</div>" +
           '<div class="chips">' + C.meta.chips.map(function (c, i) {
             return '<span class="chip' + (i === 1 ? " red" : "") + '">' + esc(c) + "</span>";
           }).join("") + "</div>" + chrome(s, idx) + "</section>";
